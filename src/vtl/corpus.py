@@ -75,7 +75,8 @@ def fingerprint(df: pd.DataFrame, metrics: Optional[Sequence[str]] = None) -> pd
         p10, p50, p90 = np.percentile(v, [10, 50, 90])
         rows.append({
             "metric": m, "n": len(v), "mean": mean, "std": std, "cv": cv,
-            "spread": SIGNED_LABEL if signed else "wide" if cv > CV_WIDE else "moderate" if cv > CV_MODERATE else "tight",
+            "spread": (SIGNED_LABEL if signed else
+                       "wide" if cv > CV_WIDE else "moderate" if cv > CV_MODERATE else "tight"),
             "p10": p10, "p50": p50, "p90": p90, "window_width": p90 - p10,
             "wall_hardness": hard,
             "walls": "hard" if hard < WALL_HARD else "soft" if hard > WALL_SOFT else "moderate",
