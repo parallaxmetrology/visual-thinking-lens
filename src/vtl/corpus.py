@@ -24,6 +24,13 @@ WALL_HARD = 0.15
 WALL_SOFT = 0.30
 RIGID = 1.5
 FLEXIBLE = 2.5
+SIGNED_LABEL = "signed: see window"
+
+
+def _is_signed(metric: str) -> bool:
+    """Offsets centred on 0 (delta_x, color_light_delta_y, radial_dx, dRC...).
+    CV = std/|mean| is meaningless for them: a near-zero mean makes it explode."""
+    return "delta" in metric or metric.split("_")[-1] in ("dx", "dy", "dRC")
 
 
 def _usable(df: pd.DataFrame) -> pd.DataFrame:
@@ -44,7 +51,9 @@ def _metrics(df: pd.DataFrame, metrics: Optional[Sequence[str]]) -> list:
 def fingerprint(df: pd.DataFrame, metrics: Optional[Sequence[str]] = None) -> pd.DataFrame:
     """One row per metric describing the corpus distribution (unreadable rows dropped).
 
-    spread         CV = std/|mean|: wide > 0.30, tight < 0.15 (tight = locked default)
+    spread         CV = std/|mean|: wide > 0.30, tight < 0.15 (tight = locked default).
+                   Not given for signed offsets (delta_x, delta_y, ...): their mean
+                   sits near 0, so CV explodes. Compare window_width instead.
     wall_hardness  std/range: hard < 0.15 (rarely leaves a narrow band), soft > 0.30
     bimodal        platykurtic (kurtosis < 2) and roughly symmetric: maybe two modes
     p10..p90       the operating window; window_width = p90 - p10
@@ -56,7 +65,8 @@ def fingerprint(df: pd.DataFrame, metrics: Optional[Sequence[str]] = None) -> pd
         if len(v) < 2:
             continue
         mean, std = v.mean(), v.std()
-        cv = std / abs(mean) if abs(mean) > 1e-8 else 0.0
+        signed = _is_signed(m)
+        cv = float("nan") if signed else (std / abs(mean) if abs(mean) > 1e-8 else 0.0)
         rng = v.max() - v.min() if v.max() > v.min() else 1.0
         hard = std / rng
         z = (v - mean) / std if std > 0 else np.zeros_like(v)
@@ -65,7 +75,7 @@ def fingerprint(df: pd.DataFrame, metrics: Optional[Sequence[str]] = None) -> pd
         p10, p50, p90 = np.percentile(v, [10, 50, 90])
         rows.append({
             "metric": m, "n": len(v), "mean": mean, "std": std, "cv": cv,
-            "spread": "wide" if cv > CV_WIDE else "moderate" if cv > CV_MODERATE else "tight",
+            "spread": SIGNED_LABEL if signed else "wide" if cv > CV_WIDE else "moderate" if cv > CV_MODERATE else "tight",
             "p10": p10, "p50": p50, "p90": p90, "window_width": p90 - p10,
             "wall_hardness": hard,
             "walls": "hard" if hard < WALL_HARD else "soft" if hard > WALL_SOFT else "moderate",

@@ -18,9 +18,9 @@ Real photographs and paintings almost always have enough texture that this works
 
 With zero gradient everywhere, both percentile thresholds are 0, so every pixel passes and the kernel returns `valid = 1` with `mass_fraction ≈ 0.99`. **Mask QA catches it** (`mask_status = FAIL`, "too much structure"). Filter on `mask_status != "FAIL"` in batch work.
 
-## 3. CV is misleading for signed metrics near zero
+## 3. CV can't describe signed metrics (handled)
 
-`fingerprint` labels spread by CV = std/|mean|. For Δx and Δy, whose means sit near 0, CV explodes and everything reads "wide". Use `window_width` (p90 − p10) or `std` for those axes.
+The Fingerprint notebook labels spread by CV = std/|mean|. For Δx and Δy, whose means sit near 0, CV explodes, so a perfectly center-locked set would read "wide". `vtl.fingerprint` gives signed offsets (Δx, Δy, color centroid offsets, radial dx/dy/dRC) no CV and labels them `signed: see window`. Compare their `window_width` (p90 − p10) across sets. What counts as tight placement depends on the corpus, so there's no absolute cutoff.
 
 ## 4. Small images are upscaled
 

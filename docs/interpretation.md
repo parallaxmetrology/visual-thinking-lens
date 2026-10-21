@@ -60,7 +60,7 @@ If a model *never* produces Δx < −0.3, or μ > 0.7, or θ > 0.5, those region
 
 - Report `r_v` alongside `gradient_floor_85` and `gradient_ceiling_97`. The *tail gap* (ceiling − floor) tells "quiet frame with a few hard accents" (big gap) from "edge energy everywhere" (small gap).
 - Compare `r_v` freely within one engine. Across engines, add context: it uses an absolute threshold on purpose.
-- Use `window_width` rather than CV for signed, near-zero metrics like Δx and Δy.
+- For Δx and Δy, compare `window_width` between sets; the fingerprint deliberately gives them no spread label.
 - Always say which `kernel_version` you used and whether `diffusion` was on.
 
 *Further reading:* Arnheim, *Art and Visual Perception* (structural description before judgment); CIE L\*a\*b\* and OKLab as coordinate systems that don't rank colors; Stevens and signal detection theory for measuring separately from preference.

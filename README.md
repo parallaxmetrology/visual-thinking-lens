@@ -75,7 +75,9 @@ More in [docs/interpretation.md](docs/interpretation.md). Limits and sharp edges
 
 ## Check the claims
 
-[parallaxmetrology.com](https://www.parallaxmetrology.com) reports, among other things, that MidJourney outputs cluster tightly around the frame center whatever the prompt, and that subject category explains only a small share of spatial variance. Those are claims. This repo is the ruler. Measure your own engine, your own prompts, your own paintings, and [post what you find](https://github.com/parallaxmetrology/visual-thinking-lens/discussions), especially if it disagrees.
+[parallaxmetrology.com](https://www.parallaxmetrology.com) reports that, under the conditions described there (400 MidJourney prompts across 8 subject categories, standard prompting), outputs cluster tightly around the frame center and subject category explains only a small share of spatial variance. Other engines, prompts and corpora may land differently, and placement alone isn't the whole story: in the first [fingerprints](fingerprints/), museum reproductions sit near center too and reach it differently.
+
+This repo is the ruler. Measure your own engine, your own prompts, your own paintings, and [post what you find](https://github.com/parallaxmetrology/visual-thinking-lens/discussions), especially if it disagrees.
 
 ## Faithful to the reference
 

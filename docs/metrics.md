@@ -56,7 +56,7 @@ Radial mass profiles (60 bins, radius normalized to the farthest corner) are tak
 
 Per metric across a set of images:
 
-- `mean`, `std`, `cv` = std/|mean| → `spread` (tight < 0.15 < moderate < 0.30 < wide)
+- `mean`, `std`, `cv` = std/|mean| → `spread` (tight < 0.15 < moderate < 0.30 < wide). Signed offsets (Δx, Δy, centroid offsets, dRC) get no CV and `spread = signed: see window`.
 - `p10`, `p50`, `p90`, `window_width` = p90 − p10 (the operating window)
 - `wall_hardness` = std/range → `walls` (hard < 0.15, soft > 0.30)
 - `skew`, `kurtosis` (Pearson), `bimodal` = kurtosis < 2 and |skew| < 0.8

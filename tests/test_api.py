@@ -47,7 +47,7 @@ def test_measure_many_and_fingerprint():
     assert {"mask_status", "color_okl_L_mean", "structure_regime"} <= set(df.columns)
     fp = vtl.fingerprint(df)
     assert set(fp.index) == set(vtl.KERNEL_KEYS)
-    assert set(fp["spread"]) <= {"wide", "moderate", "tight"}
+    assert set(fp["spread"]) <= {"wide", "moderate", "tight", "signed: see window"}
 
 
 def test_rigidity_and_compare():
@@ -124,3 +124,11 @@ def test_diffusion_preserves_edges_and_does_not_wrap():
     out = perona_malik(g)
     assert out[10, 31] < 0.01 and out[10, 32] > 0.99   # edge kept
     assert out[10, 0] < 0.01 and out[10, 63] > 0.99    # no wraparound
+
+
+def test_signed_metrics_get_no_cv_spread_label():
+    rng = np.random.default_rng(2)
+    df = pd.DataFrame({"delta_x": rng.normal(0, 0.01, 50), "sdi": rng.normal(0.25, 0.01, 50)})
+    fp = vtl.fingerprint(df, metrics=["delta_x", "sdi"])
+    assert fp.loc["delta_x", "spread"] == "signed: see window" and np.isnan(fp.loc["delta_x", "cv"])
+    assert fp.loc["sdi", "spread"] == "tight"
