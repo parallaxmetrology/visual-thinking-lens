@@ -1,0 +1,29 @@
+name: Share a fingerprint
+description: Measurements from an engine, model, prompt set or artist
+labels: [fingerprint]
+body:
+  - type: input
+    id: maker
+    attributes:
+      label: What made these images?
+      placeholder: e.g. Midjourney v7, default settings / my oil paintings 2019–2024
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: How were they made and selected?
+      description: Prompts or prompt source, count, settings, any filtering.
+    validations:
+      required: true
+  - type: textarea
+    id: csv
+    attributes:
+      label: Measurements
+      description: Attach the CSV from `vtl measure folder/ -o out.csv` (drag the file here).
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: What stood out?

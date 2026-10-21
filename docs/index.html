@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual Thinking Lens</title>
+<meta name="description" content="Drop images, see where their visual mass sits. A deterministic structural instrument from Parallax Metrology. Runs in your browser; nothing is uploaded.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Mono:wght@400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #111; --raised: #161616; --border: #1e1e1e; --border-light: #2a2a2a;
+    --text: #e8e4dc; --muted: #8a867f; --dim: #555;
+    --accent: #c4a882; --accent-dim: rgba(196,168,130,.10); --accent-border: rgba(196,168,130,.25);
+    --vtl: #7a9e8e; --vtl-dim: rgba(122,158,142,.12);
+    --hot: #e66e5a;
+    --mono: 'DM Mono', ui-monospace, monospace; --serif: 'Cormorant Garamond', Georgia, serif; --sans: 'DM Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  header { border-bottom: 1px solid var(--border); }
+  header .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 16px; }
+  .logo { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  nav a { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-left: 22px; }
+  .hero { padding: 56px 0 28px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--vtl); }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 5vw, 56px); line-height: 1.08; margin: 10px 0 14px; }
+  .lede { max-width: 640px; color: var(--muted); font-size: 16px; }
+  .lede b { color: var(--text); font-weight: 400; }
+
+  .drop { margin: 28px 0 8px; border: 1px dashed var(--border-light); border-radius: 6px; padding: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; background: var(--surface); transition: border-color .15s, background .15s; }
+  .drop.over { border-color: var(--accent); background: var(--accent-dim); }
+  .drop p { flex: 1 1 260px; color: var(--muted); font-size: 14px; }
+  button, .btn { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text); background: transparent; border: 1px solid var(--border-light); border-radius: 4px; padding: 10px 14px; cursor: pointer; }
+  button:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { border-color: var(--accent-border); color: var(--accent); }
+  button:disabled { opacity: .35; cursor: default; }
+  .status { font-family: var(--mono); font-size: 11px; color: var(--dim); min-height: 18px; margin-bottom: 20px; }
+
+  [hidden] { display: none !important; }
+  .board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-bottom: 36px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px; }
+  .panel h2 { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  #map { width: 100%; aspect-ratio: 1; display: block; }
+  .readout { font-family: var(--serif); font-size: 22px; line-height: 1.3; margin-bottom: 18px; }
+  .readout em { color: var(--accent); font-style: normal; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-family: var(--mono); font-weight: 400; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  td.k { font-family: var(--mono); color: var(--vtl); }
+  .bar { display: inline-block; height: 6px; background: var(--accent); border-radius: 3px; vertical-align: middle; opacity: .8; }
+  .hint { color: var(--dim); font-size: 12px; margin-top: 12px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-bottom: 48px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color .15s; }
+  .card.hl { border-color: var(--accent); }
+  .card canvas { width: 100%; display: block; background: #000; cursor: pointer; }
+  .card .body { padding: 12px 14px 14px; }
+  .card .name { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; gap: 8px; }
+  .badge { font-size: 9px; letter-spacing: .08em; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border-light); color: var(--muted); flex: none; }
+  .badge.WARN { color: #c9a74a; border-color: rgba(201,167,74,.35); } .badge.FAIL { color: var(--hot); border-color: rgba(230,110,90,.4); }
+  .card dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 10px; margin-top: 10px; }
+  .card dt { font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .card dd { font-size: 14px; font-variant-numeric: tabular-nums; }
+
+  .explain { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px 28px; padding: 36px 0; border-top: 1px solid var(--border); }
+  .explain h3 { font-family: var(--mono); font-weight: 400; font-size: 13px; color: var(--accent); margin-bottom: 4px; }
+  .explain p { font-size: 14px; color: var(--muted); }
+  footer { border-top: 1px solid var(--border); padding: 28px 0 48px; color: var(--dim); font-size: 13px; }
+  footer p + p { margin-top: 6px; }
+  code { font-family: var(--mono); font-size: 12px; background: var(--raised); padding: 1px 5px; border-radius: 3px; color: var(--text); }
+
+  @media (max-width: 820px) { .board { grid-template-columns: minmax(0, 1fr); } nav a:not(:last-child) { display: none; } }
+  @media (max-width: 480px) { .wrap { padding: 0 16px; } .drop { padding: 18px; } }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="logo">Visual Thinking Lens</span>
+  <nav><a href="https://www.parallaxmetrology.com">Parallax Metrology</a><a href="https://www.artistinfluencer.com">Artist Influencer</a><a href="https://github.com/parallaxmetrology/visual-thinking-lens">GitHub</a></nav>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Structure has geometry · Measure it</div>
+    <h1>Where does the weight go?</h1>
+    <p class="lede">Drop in a handful of images: one engine's outputs, a series of your paintings, ten photos of anything. The lens finds the <b>structural mass</b> in each and plots where it lands. One centered image is a choice. <b>Twenty centered images about twenty different things are a default.</b></p>
+
+    <div class="drop" id="drop">
+      <p>Drop images here, or choose files. Everything runs on your machine; nothing is uploaded.</p>
+      <label class="btn" for="file">Choose images</label>
+      <input id="file" type="file" accept="image/*" multiple hidden>
+      <button class="primary" id="samples">Use sample images</button>
+      <button id="csv" disabled>Download CSV</button>
+      <button id="clear" disabled>Clear</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="board" id="board" hidden>
+    <div class="panel">
+      <h2>Mass centroids in the frame</h2>
+      <canvas id="map" width="720" height="720" aria-label="Scatter plot of mass centroids"></canvas>
+      <p class="hint">Each dot is one image's centre of structural mass. Cross = frame centre. Ring = 0.15 from centre. Hover a dot or a card to link them.</p>
+    </div>
+    <div class="panel">
+      <h2>The set, as a fingerprint</h2>
+      <div class="readout" id="readout"></div>
+      <table id="fp"><thead><tr><th>metric</th><th>p10</th><th>median</th><th>p90</th><th>window</th><th></th></tr></thead><tbody></tbody></table>
+      <p class="hint">Window = p90 − p10, the range the set actually uses on each axis. Narrow windows across varied subjects point to a learned default; wide windows point to choice.</p>
+    </div>
+  </section>
+
+  <section class="cards" id="cards"></section>
+
+  <section class="explain">
+    <div><h3>Δx · Δy · placement</h3><p>Where the centroid of structural mass sits, from −0.5 to 0.5. Negative Δy is the upper frame.</p></div>
+    <div><h3>SDI · dispersion</h3><p>How far mass spreads from its own centre: about 0.1 for a tight blob, 0.4 when spread to the edges.</p></div>
+    <div><h3>μ · cohesion</h3><p>One dominant body (→1) or many equal fragments (→0). Two equal halves read low by design.</p></div>
+    <div><h3>xₚ · peripheral pull</h3><p>The share of edge energy in the outer 15% of the frame. Low means everything is pulled inward.</p></div>
+    <div><h3>rᵥ · void</h3><p>How much of the frame carries almost no structure. Quiet ground versus edge activity everywhere.</p></div>
+    <div><h3>Gold = what was measured</h3><p>The mask keeps mid-strength gradients (85th–97th percentile): texture, marks, modelling. Crisp flat shapes on blank grounds can fool it, so check the gold.</p></div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <p>Kernel <code>canon3-v8</code>, ported to JavaScript. Browsers resize images differently from OpenCV, so numbers here are close to, not identical with, the reference Python package (<code>pip install git+https://github.com/parallaxmetrology/visual-thinking-lens</code>).</p>
+  <p>Coordinates, not grades. <a href="https://github.com/parallaxmetrology/visual-thinking-lens/blob/main/docs/interpretation.md">How to read them</a> · <a href="https://github.com/parallaxmetrology/visual-thinking-lens/discussions">Share what you find</a> · <a href="https://www.parallaxmetrology.com">Parallax Metrology</a></p>
+</div></footer>
+
+<script type="module">
+import { KERNEL_KEYS, TARGET_MAX_SIDE } from "./kernel.js";
+
+const SAMPLES = ["frog", "portrait", "landscape", "still_life", "drawing", "collapse", "room", "walking", "study", "abstract"];
+const SHOW = [["delta_x", "Δx"], ["delta_y", "Δy"], ["sdi", "SDI"], ["mu", "μ"], ["x_p", "xₚ"], ["r_v", "rᵥ"]];
+const FP = [["delta_x", "Δx"], ["delta_y", "Δy"], ["sdi", "SDI"], ["mu", "μ"], ["x_p", "xₚ"], ["r_v", "rᵥ"], ["theta", "θ"], ["rho_r", "ρᵣ"]];
+const $ = (id) => document.getElementById(id);
+const results = [];
+let hover = -1, pending = 0, nextId = 0;
+const worker = new Worker("./worker.js", { type: "module" });
+const waiting = new Map();
+worker.onmessage = (e) => { const cb = waiting.get(e.data.id); waiting.delete(e.data.id); cb(e.data); };
+
+function measureInWorker(rgba, w, h) {
+  return new Promise((resolve, reject) => {
+    const id = nextId++;
+    waiting.set(id, (d) => (d.error ? reject(new Error(d.error)) : resolve(d)));
+    worker.postMessage({ id, buffer: rgba.buffer, w, h }, [rgba.buffer]);
+  });
+}
+
+async function addImage(blob, name) {
+  pending++; status();
+  try {
+    const bmp = await createImageBitmap(blob, { imageOrientation: "from-image" });
+    const s = TARGET_MAX_SIDE / Math.max(bmp.width, bmp.height);
+    const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
+    const c = new OffscreenCanvas(w, h), ctx = c.getContext("2d", { willReadFrequently: true });
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bmp, 0, 0, w, h);
+    const img = ctx.getImageData(0, 0, w, h);
+    const { kernel, mask } = await measureInWorker(img.data, w, h);
+    results.push({ name, kernel, mask, bmp, w, h });
+    renderCard(results.length - 1);
+    renderBoard();
+  } catch (err) {
+    console.error(err);
+    $("status").textContent = `Couldn't read ${name}: ${err.message}`;
+  } finally { pending--; status(); }
+}
+
+function status() {
+  const n = results.length;
+  $("status").textContent = pending ? `Measuring… ${pending} left` : n ? `${n} image${n > 1 ? "s" : ""} measured` : "";
+  $("csv").disabled = $("clear").disabled = n === 0;
+}
+
+function overlay(r, maxW = 520) {
+  const s = Math.min(1, maxW / r.w), w = Math.round(r.w * s), h = Math.round(r.h * s);
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d");
+  ctx.filter = "grayscale(1) brightness(.55)"; ctx.drawImage(r.bmp, 0, 0, w, h); ctx.filter = "none";
+  const m = new ImageData(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (r.mask[Math.min(r.h - 1, Math.floor(y / s)) * r.w + Math.min(r.w - 1, Math.floor(x / s))]) {
+      const i = (y * w + x) * 4; m.data[i] = 196; m.data[i + 1] = 168; m.data[i + 2] = 130; m.data[i + 3] = 215;
+    }
+  }
+  const mc = new OffscreenCanvas(w, h); mc.getContext("2d").putImageData(m, 0, 0); ctx.drawImage(mc, 0, 0);
+  const cx = (w - 1) / 2, cy = (h - 1) / 2, k = r.kernel, R = Math.max(5, w / 60);
+  ctx.strokeStyle = "#7a9e8e"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - 2.5 * R, cy); ctx.lineTo(cx + 2.5 * R, cy); ctx.moveTo(cx, cy - 2.5 * R); ctx.lineTo(cx, cy + 2.5 * R); ctx.stroke();
+  if (k.valid) {
+    ctx.fillStyle = "#e66e5a"; ctx.strokeStyle = "#0a0a0a";
+    ctx.beginPath(); ctx.arc(cx + k.delta_x * w, cy + k.delta_y * h, R, 0, 7); ctx.fill(); ctx.stroke();
+  }
+  return cv;
+}
+
+function renderCard(i) {
+  const r = results[i], k = r.kernel, qa = k.qa || { status: "FAIL", mask_mode: "INVALID" };
+  const card = document.createElement("article"); card.className = "card"; card.dataset.i = i;
+  const cv = overlay(r);
+  card.append(cv);
+  const body = document.createElement("div"); body.className = "body";
+  body.innerHTML = `<div class="name"><span title="${esc(r.name)}">${esc(r.name)}</span><span class="badge ${qa.status}" title="${esc((qa.reasons || []).join('; '))}">${qa.mask_mode.replace("_FIELD", "").toLowerCase()}</span></div>
+    <dl>${SHOW.map(([key, lab]) => `<div><dt>${lab}</dt><dd>${k.valid ? fmt(k[key]) : "—"}</dd></div>`).join("")}</dl>`;
+  card.append(body);
+  let showMask = true;
+  cv.addEventListener("click", () => { // toggle original / overlay
+    showMask = !showMask;
+    const ctx = cv.getContext("2d");
+    if (showMask) ctx.drawImage(overlay(r), 0, 0); else ctx.drawImage(r.bmp, 0, 0, cv.width, cv.height);
+  });
+  cv.title = "Click to toggle the original";
+  card.addEventListener("mouseenter", () => { hover = i; drawMap(); card.classList.add("hl"); });
+  card.addEventListener("mouseleave", () => { hover = -1; drawMap(); card.classList.remove("hl"); });
+  $("cards").append(card);
+}
+
+const fmt = (v) => (Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(3));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pct = (a, q) => { const s = [...a].sort((x, y) => x - y), p = (q / 100) * (s.length - 1), lo = Math.floor(p); return s[lo] + (s[Math.ceil(p)] - s[lo]) * (p - lo); };
+
+function renderBoard() {
+  const valid = results.filter((r) => r.kernel.valid);
+  $("board").hidden = valid.length === 0;
+  if (!valid.length) return;
+  drawMap();
+  const within = valid.filter((r) => Math.hypot(r.kernel.delta_x, r.kernel.delta_y) <= 0.15).length;
+  const sdis = valid.map((r) => r.kernel.sdi);
+  $("readout").innerHTML = valid.length < 2
+    ? `One image is a coordinate, not a pattern. <em>Add more</em> to see a fingerprint.`
+    : `<em>${within} of ${valid.length}</em> images keep their mass within 0.15 of the frame centre. Median dispersion is <em>${pct(sdis, 50).toFixed(2)}</em>.`;
+  const rows = FP.map(([key, lab]) => {
+    const v = valid.map((r) => r.kernel[key]);
+    return { lab, p10: pct(v, 10), p50: pct(v, 50), p90: pct(v, 90) };
+  });
+  const span = { "Δx": 1, "Δy": 1, "SDI": 0.5, "μ": 1, "xₚ": 1, "rᵥ": 1, "θ": 1, "ρᵣ": 100 };
+  $("fp").tBodies[0].innerHTML = rows.map((r) => {
+    const win = r.p90 - r.p10, width = Math.min(100, (win / span[r.lab]) * 100);
+    return `<tr><td class="k">${r.lab}</td><td>${fmt(r.p10)}</td><td>${fmt(r.p50)}</td><td>${fmt(r.p90)}</td><td>${fmt(win)}</td><td style="width:22%"><span class="bar" style="width:${Math.max(2, width)}%"></span></td></tr>`;
+  }).join("");
+}
+
+function drawMap() {
+  const cv = $("map"), ctx = cv.getContext("2d"), S = cv.width, pad = 36, inner = S - 2 * pad;
+  const X = (dx) => pad + (dx + 0.5) * inner, Y = (dy) => pad + (dy + 0.5) * inner;
+  ctx.clearRect(0, 0, S, S);
+  ctx.strokeStyle = "#2a2a2a"; ctx.lineWidth = 1; ctx.strokeRect(pad, pad, inner, inner);
+  ctx.setLineDash([3, 5]);
+  for (const t of [1 / 3, 2 / 3]) { ctx.beginPath(); ctx.moveTo(pad + t * inner, pad); ctx.lineTo(pad + t * inner, pad + inner); ctx.moveTo(pad, pad + t * inner); ctx.lineTo(pad + inner, pad + t * inner); ctx.stroke(); }
+  ctx.setLineDash([]);
+  ctx.strokeStyle = "rgba(122,158,142,.55)"; ctx.beginPath(); ctx.arc(X(0), Y(0), 0.15 * inner, 0, 7); ctx.stroke();
+  ctx.strokeStyle = "#7a9e8e"; ctx.beginPath(); ctx.moveTo(X(0) - 10, Y(0)); ctx.lineTo(X(0) + 10, Y(0)); ctx.moveTo(X(0), Y(0) - 10); ctx.lineTo(X(0), Y(0) + 10); ctx.stroke();
+  ctx.fillStyle = "#555"; ctx.font = "20px 'DM Mono', monospace"; ctx.textAlign = "center";
+  ctx.fillText("top", S / 2, pad - 12); ctx.fillText("bottom", S / 2, S - 10);
+  ctx.save(); ctx.translate(16, S / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("left", 0, 6); ctx.restore();
+  ctx.save(); ctx.translate(S - 16, S / 2); ctx.rotate(Math.PI / 2); ctx.fillText("right", 0, 6); ctx.restore();
+  results.forEach((r, i) => {
+    if (!r.kernel.valid) return;
+    const hl = i === hover;
+    ctx.beginPath(); ctx.arc(X(r.kernel.delta_x), Y(r.kernel.delta_y), hl ? 13 : 8, 0, 7);
+    ctx.fillStyle = hl ? "#e66e5a" : "rgba(196,168,130,.85)"; ctx.fill();
+    ctx.strokeStyle = "#0a0a0a"; ctx.lineWidth = 2; ctx.stroke();
+  });
+}
+
+$("map").addEventListener("mousemove", (e) => {
+  const cv = $("map"), b = cv.getBoundingClientRect(), S = cv.width, pad = 36, inner = S - 2 * pad;
+  const mx = ((e.clientX - b.left) / b.width) * S, my = ((e.clientY - b.top) / b.height) * S;
+  let best = -1, bd = 400;
+  results.forEach((r, i) => { if (!r.kernel.valid) return; const d = (pad + (r.kernel.delta_x + .5) * inner - mx) ** 2 + (pad + (r.kernel.delta_y + .5) * inner - my) ** 2; if (d < bd) { bd = d; best = i; } });
+  if (best !== hover) {
+    hover = best; drawMap();
+    document.querySelectorAll(".card").forEach((c) => c.classList.toggle("hl", +c.dataset.i === best));
+  }
+});
+$("map").addEventListener("mouseleave", () => { hover = -1; drawMap(); document.querySelectorAll(".card.hl").forEach((c) => c.classList.remove("hl")); });
+
+function handleFiles(files) { [...files].filter((f) => f.type.startsWith("image/")).forEach((f) => addImage(f, f.name)); }
+$("file").addEventListener("change", (e) => { handleFiles(e.target.files); e.target.value = ""; });
+const drop = $("drop");
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
+$("samples").addEventListener("click", async () => {
+  $("samples").disabled = true;
+  for (const n of SAMPLES) { const res = await fetch(`samples/${n}.jpg`); addImage(await res.blob(), `${n}.jpg`); }
+});
+$("clear").addEventListener("click", () => {
+  results.length = 0; $("cards").innerHTML = ""; $("board").hidden = true; $("samples").disabled = false; status();
+});
+$("csv").addEventListener("click", () => {
+  const cols = ["filename", ...KERNEL_KEYS, "mass_fraction", "mask_mode", "kernel_version"];
+  const lines = [cols.join(",")].concat(results.map((r) => cols.map((c) =>
+    c === "filename" ? `"${r.name.replace(/"/g, '""')}"` : c === "mask_mode" ? (r.kernel.qa?.mask_mode ?? "INVALID") : r.kernel[c] ?? "").join(",")));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lines.join("\n") + "\n"], { type: "text/csv" }));
+  a.download = "vtl_browser_measurements.csv"; a.click(); URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>

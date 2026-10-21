@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "visual-thinking-lens"
+version = "0.1.0"
+description = "Deterministic structural measurement for images: where visual mass sits, how it spreads, and whether a generator ever leaves its default."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Russell Parrish", email = "russellgparrish@gmail.com" }]
+requires-python = ">=3.9"
+keywords = ["composition", "image analysis", "generative ai", "evaluation", "spatial bias", "computer vision", "art"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Topic :: Scientific/Engineering :: Image Processing",
+  "Topic :: Artistic Software",
+  "Programming Language :: Python :: 3",
+]
+dependencies = [
+  "numpy>=1.23",
+  "scipy>=1.9",
+  "scikit-image>=0.20",
+  "opencv-python-headless>=4.8",
+  "pillow>=9.5",
+  "pandas>=1.5",
+]
+
+[project.optional-dependencies]
+notebooks = ["jupyter", "matplotlib"]
+dev = ["pytest>=7", "ruff", "matplotlib", "nbformat", "nbclient", "ipykernel"]
+
+[project.scripts]
+vtl = "vtl.cli:main"
+
+[project.urls]
+Homepage = "https://www.parallaxmetrology.com"
+Demo = "https://parallaxmetrology.github.io/visual-thinking-lens/"
+Source = "https://github.com/parallaxmetrology/visual-thinking-lens"
+Issues = "https://github.com/parallaxmetrology/visual-thinking-lens/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vtl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E741"]  # l, m, s are the LMS channel names in OKLab

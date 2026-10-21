@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use VTL in research, please cite it as below."
+title: "Visual Thinking Lens: deterministic structural measurement for images"
+type: software
+authors:
+  - family-names: Parrish
+    given-names: Russell
+    orcid: https://orcid.org/0009-0008-9781-7995
+version: "0.1.0"
+date-released: 2026-10-21
+license: MIT
+url: https://www.parallaxmetrology.com
+repository-code: https://github.com/parallaxmetrology/visual-thinking-lens
+keywords:
+  - composition
+  - spatial priors
+  - generative models
+  - image evaluation
+abstract: >
+  A deterministic, model-free instrument that measures the spatial organization of
+  visual mass in an image (placement, void, packing, cohesion, peripheral pull,
+  orientation, thickness, dispersion), with companion color/value and radial
+  compliance kernels and corpus-level fingerprints for comparing generators and makers.

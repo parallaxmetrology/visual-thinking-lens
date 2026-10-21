@@ -1,0 +1,25 @@
+name: Wrong reading
+description: The numbers disagree with what the image is doing
+labels: [wrong-reading]
+body:
+  - type: textarea
+    id: image
+    attributes:
+      label: Image
+      description: Attach it, link it, or describe it if you can't share it.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: Paste `vtl measure image.jpg` (and `vtl overlay image.jpg` if you can).
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and why?
+    validations:
+      required: true
