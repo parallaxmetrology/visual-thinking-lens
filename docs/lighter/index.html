@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lighter</title>
+<meta name="description" content="Which spot in a real painting is lighter? A value-judgment game for painters, then a short test of how far your eye drifts.">
+<meta property="og:title" content="Lighter: which spot is lighter?">
+<meta property="og:description" content="A value-judgment game on real paintings. Painters spend years learning this; your eye is bad at it on purpose.">
+<meta property="og:image" content="https://parallaxmetrology.github.io/visual-thinking-lens/assets/og-lighter.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Two spots in a real painting. Tap the lighter one. Then the painting drops away and you see what your eye did.">
+<style>
+:root{--bg:#1f1e1c;--panel:#262523;--ink:#ecebe6;--muted:#a19d94;--line:#3a3935;--hit:#7fc8a9;--miss:#e8846b;--accent:#f0d9a8;
+  --stage:#3b3b3b}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#efede8;--panel:#e6e3dc;--ink:#1d1c1a;--muted:#6b675f;--line:#d2cec5;--hit:#2f8a63;--miss:#c0512f;--accent:#8a5a12}}
+:root[data-theme="light"]{--bg:#efede8;--panel:#e6e3dc;--ink:#1d1c1a;--muted:#6b675f;--line:#d2cec5;--hit:#2f8a63;--miss:#c0512f;--accent:#8a5a12}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;max-width:1100px;margin:0 auto;padding:18px 16px 6px}
+header h1{font:500 22px/1 Georgia,"Iowan Old Style",serif;margin:0;letter-spacing:.01em}
+header h1 i{font-style:italic;color:var(--accent)}
+#pips{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+#pips span{width:9px;height:9px;border-radius:50%;background:var(--line)}
+#pips span.now{background:var(--ink)}
+#pips span.hit{background:var(--hit)}
+#pips span.miss{background:var(--miss)}
+main{max-width:1100px;margin:0 auto;padding:6px 16px 40px}
+.screen{display:none}.screen.on{display:block}
+/* intro */
+.intro{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:36px;align-items:center;min-height:72vh}
+.intro h2{font:400 clamp(34px,5.4vw,62px)/1.02 Georgia,"Iowan Old Style",serif;margin:0 0 18px;letter-spacing:-.01em}
+.intro h2 em{color:var(--accent)}
+.intro p{max-width:520px;margin:0 0 14px;color:var(--ink)}
+.intro .small{color:var(--muted);font-size:14px}
+.teaser{position:relative;aspect-ratio:1;max-width:460px;width:100%;justify-self:center;background:#7a7a7a;border:14px solid var(--stage);border-radius:6px;overflow:hidden}
+.teaser div{position:absolute}
+.big{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:13px 26px;font-size:17px;font-weight:500}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:999px;padding:10px 18px;font-size:14px;color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* trial */
+.stagewrap{position:relative;background:var(--stage);border-radius:6px;display:flex;justify-content:center;align-items:center;padding:14px;min-height:52vh;user-select:none;-webkit-user-select:none}
+.canvases{position:relative;line-height:0;touch-action:manipulation}
+.canvases canvas{display:block;max-width:100%}
+#veil{position:absolute;inset:0;opacity:0;transition:opacity .7s ease;pointer-events:none}
+#rings{position:absolute;inset:0;pointer-events:none}
+.q{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:14px 0 6px}
+.q h3{font:400 24px/1.2 Georgia,serif;margin:0}
+.q .work{color:var(--muted);font-size:13px}
+.choices{display:flex;gap:10px}
+.choice{min-width:96px;padding:12px 20px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:17px;font-weight:500}
+.choice:hover{border-color:var(--ink)}
+.verdict{min-height:84px;margin-top:6px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.verdict .msg{max-width:720px}
+.verdict .msg b.hit{color:var(--hit)}.verdict .msg b.miss{color:var(--miss)}
+.verdict .vals{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px;margin-top:2px}
+.hold{font-size:13px;color:var(--muted)}
+/* gauge */
+.gauge{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:760px;margin:0 auto;border-radius:6px;overflow:hidden;padding:14px;background:var(--stage)}
+.field{aspect-ratio:1;display:flex;align-items:center;justify-content:center;transition:background-color .6s ease;cursor:pointer}
+.field div{width:30%;aspect-ratio:1}
+/* result */
+.result h2{font:400 clamp(30px,4.6vw,50px)/1.05 Georgia,serif;margin:18px 0 8px}
+.result .lede{max-width:700px;color:var(--ink);margin:0 0 24px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 28px}
+.stat{background:var(--panel);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font:400 34px/1.1 Georgia,serif;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.twin{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center;margin:8px 0 28px}
+.twin .gauge{max-width:none;width:100%}
+.twin p{margin:0 0 12px;max-width:460px}
+details{border-top:1px solid var(--line);padding:12px 0;max-width:760px}
+summary{cursor:pointer;color:var(--muted)}
+details p{font-size:14px;color:var(--ink)}
+.history{font-size:13px;color:var(--muted);margin-top:10px}
+footer{max-width:1100px;margin:0 auto;padding:0 16px 30px;font-size:12px;color:var(--muted)}
+kbd{font:12px ui-monospace,monospace;border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+@media(max-width:760px){.intro{grid-template-columns:1fr;gap:22px;min-height:0;padding-top:10px}.teaser{max-width:320px}.stats{grid-template-columns:1fr 1fr}.twin{grid-template-columns:1fr}.stagewrap{padding:8px;min-height:0}.q h3{font-size:20px}}
+</style>
+</head>
+<body>
+<header><h1><i>Lighter</i></h1><div id="pips" aria-hidden="true"></div></header>
+<main>
+
+<section class="screen on" id="s-intro">
+  <div class="intro">
+    <div>
+      <h2>Which spot is <em>lighter?</em></h2>
+      <p>Painters spend years learning to see value: how light or dark a patch really is, apart from everything around it. The eye is bad at this on purpose. It judges each patch against its neighbours.</p>
+      <p>You'll get ten pairs of spots in real paintings and pick the lighter one. Then the painting drops away and you see the two patches on plain grey. After that, a short test measures how far your eye drifts.</p>
+      <div class="row" style="margin-top:22px"><button class="big" id="go">Start <span aria-hidden="true">→</span></button>
+        <label class="ghost" style="cursor:pointer">Use my own picture<input type="file" id="own" accept="image/*" hidden></label></div>
+      <p class="small" style="margin-top:16px">Takes about three minutes. Keys: <kbd>A</kbd> / <kbd>B</kbd> or <kbd>←</kbd> / <kbd>→</kbd> to choose, <kbd>space</kbd> to continue.</p>
+      <p class="history" id="history"></p>
+    </div>
+    <figure style="margin:0;justify-self:center;width:100%;max-width:460px"><div class="teaser" id="teaser" aria-label="Two identical grey squares on a dark and a light ground"></div><figcaption class="small" style="text-align:center;margin-top:8px;color:var(--muted);font-size:14px">The two squares are the same grey. Hover or tap to join them.</figcaption></figure>
+  </div>
+</section>
+
+<section class="screen" id="s-trial">
+  <div class="q"><div><h3 id="qtext">Which ring holds the lighter value?</h3><div class="work" id="work"></div></div>
+    <div class="choices"><button class="choice" data-pick="0">A</button><button class="choice" data-pick="1">B</button></div></div>
+  <div class="stagewrap" id="stagewrap">
+    <div class="canvases" id="canvases"><canvas id="paint"></canvas><canvas id="veil"></canvas><canvas id="rings"></canvas></div>
+  </div>
+  <div class="verdict" id="verdict"><div class="msg" id="msg"><span class="hold">Tap a ring, or use the buttons.</span></div><div id="nextwrap"></div></div>
+</section>
+
+<section class="screen" id="s-gauge">
+  <div class="q"><div><h3 id="gtext">Which centre square is lighter?</h3><div class="work" id="gsub">Same effect, stripped down. Trust your first look.</div></div>
+    <div class="choices"><button class="choice" data-g="0">Left</button><button class="choice" data-g="1">Right</button></div></div>
+  <div class="gauge" id="gauge"><div class="field" data-g="0"><div></div></div><div class="field" data-g="1"><div></div></div></div>
+</section>
+
+<section class="screen result" id="s-result">
+  <h2 id="r-head"></h2>
+  <p class="lede" id="r-lede"></p>
+  <div class="stats">
+    <div class="stat"><b id="r-score"></b><span>pairs called right</span></div>
+    <div class="stat"><b id="r-traps"></b><span>traps you fell for: the darker ground made the darker patch look lighter</span></div>
+    <div class="stat"><b id="r-shift"></b><span>your drift in L*, measured by the square test</span></div>
+  </div>
+  <div class="twin" id="twin">
+    <div class="gauge" id="r-gauge"><div class="field"><div></div></div><div class="field"><div></div></div></div>
+    <div><p id="r-twin"></p><div class="row"><button class="ghost" id="strip">Take the grounds away</button></div></div>
+  </div>
+  <div class="row" style="margin-bottom:22px"><button class="big" id="again">Play again <span aria-hidden="true">↻</span></button>
+    <label class="ghost" style="cursor:pointer">Try my own picture<input type="file" id="own2" accept="image/*" hidden></label></div>
+  <details><summary>How it's measured</summary>
+    <p>Each value is CIE L*, computed from the image file's sRGB pixels: 0 is black, 100 is white, and a Munsell value step is about 10. Patches are picked automatically. The two patches in a pair differ by 4 to 14 L*, each is nearly flat inside, and their surroundings differ by at least 12 L*. A trap is a pair where the lighter patch sits on the lighter ground. Simultaneous contrast pushes it toward looking darker.</p>
+    <p>The square test runs two interleaved staircases. One grey sits on a near-black ground, the other on a near-white ground. The drift is where the staircases settle, minus 50. Your screen's brightness, gamma and the room light all change what you see, and ten pairs plus sixteen squares is a small sample. Treat the numbers as a demonstration, not a diagnosis.</p>
+    <p>Paintings: Caravaggio, <i>The Calling of Saint Matthew</i> (1599–1600). Vermeer, <i>The Milkmaid</i> (c. 1658). Alfred Stevens, <i>In the Studio</i> (1888). William-Adolphe Bouguereau, <i>Breton Brother and Sister</i> (1871). Hanabusa Itchō, c. 1710. Pietro Lorenzetti, <i>The Crucifixion</i>. All are public-domain reproductions.</p>
+  </details>
+</section>
+</main>
+<footer>Parallax Metrology · part of the <a href="../" style="color:inherit">Visual Thinking Lens</a> · also play <a href="../weight/" style="color:inherit">Where's the weight?</a> · everything runs in your browser; your own pictures never leave it.</footer>
+
+<script>
+const WORKS=[
+  {id:'caravaggio',title:'The Calling of Saint Matthew',who:'Caravaggio, 1599–1600'},
+  {id:'vermeer',title:'The Milkmaid',who:'Vermeer, c. 1658'},
+  {id:'stevens',title:'In the Studio',who:'Alfred Stevens, 1888'},
+  {id:'bouguereau',title:'Breton Brother and Sister',who:'Bouguereau, 1871'},
+  {id:'hanabusa',title:'Hanging scroll',who:'Hanabusa Itchō, c. 1710'},
+  {id:'lorenzetti',title:'The Crucifixion',who:'Pietro Lorenzetti'},
+];
+const TRIALS=10, TRAPS=7, GAUGE_TRIALS=16;
+const $=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+// ---- colour ----
+const lin=c=>(c/=255)<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4);
+const LUT=new Float32Array(256).map((_,i)=>lin(i));
+const Lstar=(r,g,b)=>{const Y=.2126*LUT[r]+.7152*LUT[g]+.0722*LUT[b];return Y>.008856?116*Math.cbrt(Y)-16:903.3*Y;};
+const greyOf=L=>{const Y=L>8?Math.pow((L+16)/116,3):L/903.3;const c=Y<=.0031308?12.92*Y:1.055*Math.pow(Y,1/2.4)-.055;const v=Math.round(Math.max(0,Math.min(1,c))*255);return `rgb(${v},${v},${v})`;};
+
+// ---- analysis: find flat patches, then pairs whose grounds disagree ----
+function analyse(img){
+  const A=240, H=Math.round(A*img.naturalHeight/img.naturalWidth);
+  const c=document.createElement('canvas');c.width=A;c.height=H;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,A,H);
+  const d=x.getImageData(0,0,A,H).data, L=new Float32Array(A*H);
+  for(let p=0;p<A*H;p++)L[p]=Lstar(d[p*4],d[p*4+1],d[p*4+2]);
+  // integral image for square-ring surrounds
+  const I=new Float64Array((A+1)*(H+1));
+  for(let y=0;y<H;y++){let s=0;for(let xx=0;xx<A;xx++){s+=L[y*A+xx];I[(y+1)*(A+1)+xx+1]=I[y*(A+1)+xx+1]+s;}}
+  const box=(x0,y0,x1,y1)=>I[y1*(A+1)+x1]-I[y0*(A+1)+x1]-I[y1*(A+1)+x0]+I[y0*(A+1)+x0];
+  const r=Math.max(4,Math.round(Math.min(A,H)*.03)), ri=Math.round(r*2), ro=r*6;
+  const disk=[];for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(dx*dx+dy*dy<=r*r)disk.push(dy*A+dx);
+  const cands=[];
+  for(let y=ro;y<H-ro;y+=3)for(let xx=ro;xx<A-ro;xx+=3){
+    let s=0,s2=0;const o=y*A+xx;for(const k of disk){const v=L[o+k];s+=v;s2+=v*v;}
+    const m=s/disk.length,sd=Math.sqrt(Math.max(0,s2/disk.length-m*m));
+    if(sd>2.6||m<4||m>95)continue;
+    const outer=box(xx-ro,y-ro,xx+ro+1,y+ro+1),inner=box(xx-ri,y-ri,xx+ri+1,y+ri+1);
+    const S=(outer-inner)/((2*ro+1)**2-(2*ri+1)**2);
+    cands.push({x:xx,y,L:m,S});
+  }
+  const pairs={trap:[],fair:[]};
+  const span=Math.min(A,H);
+  for(let t=0;t<150000&&cands.length>1;t++){
+    const a=cands[rnd(cands.length)],b=cands[rnd(cands.length)];
+    const dist=Math.hypot(a.x-b.x,a.y-b.y);
+    if(dist<span*.14||dist>span*.75)continue;
+    const dL=a.L-b.L,dS=a.S-b.S;
+    if(Math.abs(dL)<4||Math.abs(dL)>14||Math.abs(dS)<12)continue;
+    const trap=Math.sign(dL)===Math.sign(dS);
+    // best pairs: grounds far apart, patch gap clearly real but small next to it
+    const g=Math.abs(dL);pairs[trap?'trap':'fair'].push({a,b,trap,score:Math.abs(dS)*(g>=5&&g<=10?1:.6)});
+  }
+  const pick=list=>{list.sort((p,q)=>q.score-p.score);const out=[];
+    for(const p of list){if(out.every(o=>[o.a,o.b].every(u=>[p.a,p.b].every(v=>Math.hypot(u.x-v.x,u.y-v.y)>ro))))out.push(p);if(out.length>=6)break;}return out;};
+  return {A,H,r,trap:pick(pairs.trap),fair:pick(pairs.fair)};
+}
+
+// ---- state ----
+let images={}, plan=[], ti=0, results=[], answered=false, gauge=null, own=null;
+
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+
+async function buildPlan(source){
+  plan=[];results=[];ti=0;
+  let pool;
+  if(source){pool=[{work:{title:'Your picture',who:''},img:source}];}
+  else{
+    const ws=shuffle(WORKS.slice()).slice(0,5);
+    pool=await Promise.all(ws.map(async w=>({work:w,img:images[w.id]||(images[w.id]=await loadImg(`works/${w.id}.jpg`))})));
+  }
+  const traps=[],fairs=[];
+  for(const p of pool){const an=p.img._an||(p.img._an=analyse(p.img));
+    an.trap.forEach(t=>traps.push({...p,an,pair:t}));an.fair.forEach(f=>fairs.push({...p,an,pair:f}));}
+  // spread trials across works: round-robin
+  const take=(list,n)=>{const by={};list.forEach(t=>(by[t.work.title]=by[t.work.title]||[]).push(t));
+    const keys=shuffle(Object.keys(by)),out=[];let k=0;while(out.length<n&&keys.some(q=>by[q].length)){const q=keys[k++%keys.length];if(by[q].length)out.push(by[q].shift());}return out;};
+  const nT=Math.min(TRAPS,traps.length), nF=Math.min(TRIALS-nT,fairs.length);
+  plan=shuffle([...take(traps,nT),...take(fairs,nF)]);
+  plan.forEach(t=>{if(Math.random()<.5)t.pair={...t.pair,a:t.pair.b,b:t.pair.a};});
+}
+
+// ---- screens ----
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0);}
+function pips(){const el=$('pips');el.innerHTML='';
+  plan.forEach((_,i)=>{const s=document.createElement('span');const r=results[i];if(r)s.className=r.right?'hit':'miss';else if(i===ti&&$('s-trial').classList.contains('on'))s.className='now';el.appendChild(s);});}
+
+// ---- trial ----
+let geo=null;
+function sizeCanvases(t){
+  const wrap=$('stagewrap'),img=t.img;
+  const maxW=wrap.clientWidth-28, maxH=Math.max(320,window.innerHeight*.66);
+  const s=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1.6);
+  const w=Math.round(img.naturalWidth*s),h=Math.round(img.naturalHeight*s),dpr=window.devicePixelRatio||1;
+  for(const c of [$('paint'),$('veil'),$('rings')]){c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';}
+  const k=w/t.an.A;
+  const pts=[t.pair.a,t.pair.b].map(p=>({x:(p.x+.5)*k,y:(p.y+.5)*k}));
+  // A is always the left-hand ring
+  if(pts[0].x>pts[1].x){pts.reverse();t.swap=true;}else t.swap=false;
+  geo={w,h,dpr,k,pts,rad:t.an.r*k};
+}
+function drawTrial(){
+  const t=plan[ti];sizeCanvases(t);
+  const {w,h,dpr,pts,rad}=geo;
+  const p=$('paint').getContext('2d');p.setTransform(dpr,0,0,dpr,0,0);p.drawImage(t.img,0,0,w,h);
+  const v=$('veil').getContext('2d');v.setTransform(dpr,0,0,dpr,0,0);v.clearRect(0,0,w,h);
+  v.fillStyle=greyOf(50);v.fillRect(0,0,w,h);v.globalCompositeOperation='destination-out';
+  pts.forEach(q=>{v.beginPath();v.arc(q.x,q.y,rad,0,7);v.fill();});v.globalCompositeOperation='source-over';
+  // the payoff: each patch's value as a big flat swatch, side by side
+  const ab=t.swap?[t.pair.b,t.pair.a]:[t.pair.a,t.pair.b], side=Math.round(Math.min(w*.3,h*.26)), gap=Math.round(side*.12);
+  // put the swatches where they cover neither patch
+  const sx=Math.round(w/2-side-gap/2), m=Math.max(16,h*.05);
+  const slots=[h-side-m,m+22,(h-side)/2,h*.62-side/2,h*.3-side/2].map(Math.round).filter(y=>y>=22&&y+side<=h);
+  const clear=y=>Math.min(...pts.map(q=>{const dx=Math.max(sx-q.x,0,q.x-(sx+2*side+gap)),dy=Math.max(y-24-q.y,0,q.y-(y+side));return Math.hypot(dx,dy)-rad-8;}));
+  const sy=slots.find(y=>clear(y)>0)??slots.reduce((p,y)=>clear(y)>clear(p)?y:p,slots[0]);
+  ab.forEach((p,i)=>{const x0=sx+i*(side+gap);v.fillStyle=greyOf(p.L);v.fillRect(x0,sy,side,side);
+    v.font='600 14px ui-sans-serif,-apple-system,Helvetica,Arial';v.textAlign='center';v.textBaseline='bottom';v.fillStyle='#fff';
+    v.fillText('AB'[i]+'  ·  L* '+p.L.toFixed(0),x0+side/2,sy-6);});
+  drawRings();
+}
+function drawRings(state){
+  const {w,h,dpr,pts,rad}=geo, c=$('rings').getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  pts.forEach((q,i)=>{
+    const R=rad+5;
+    c.lineWidth=4;c.strokeStyle='rgba(0,0,0,.75)';c.beginPath();c.arc(q.x,q.y,R,0,7);c.stroke();
+    c.lineWidth=2;c.strokeStyle=state&&state[i]?state[i]:'#fff';c.beginPath();c.arc(q.x,q.y,R,0,7);c.stroke();
+    const ty=q.y-R-14<10?q.y+R+16:q.y-R-12;
+    c.font='600 15px ui-sans-serif,-apple-system,Helvetica,Arial';c.textAlign='center';c.textBaseline='middle';
+    c.lineWidth=4;c.strokeStyle='rgba(0,0,0,.8)';c.strokeText('AB'[i],q.x,ty);c.fillStyle='#fff';c.fillText('AB'[i],q.x,ty);
+  });
+}
+function startTrial(){
+  answered=false;show('s-trial');pips();
+  const t=plan[ti];
+  $('work').textContent=`${ti+1} of ${plan.length} · ${t.work.title}${t.work.who?' — '+t.work.who:''}`;
+  $('qtext').textContent='Which ring holds the lighter value?';
+  $('veil').style.transition='none';$('veil').style.opacity=0;
+  $('msg').innerHTML='<span class="hold">Tap a ring, or use the buttons.</span>';$('nextwrap').innerHTML='';
+  document.querySelectorAll('[data-pick]').forEach(b=>b.disabled=false);
+  drawTrial();
+}
+function answer(i){
+  if(answered)return;answered=true;
+  const t=plan[ti];
+  const ab=t.swap?[t.pair.b,t.pair.a]:[t.pair.a,t.pair.b];
+  const lighter=ab[0].L>ab[1].L?0:1, right=i===lighter;
+  results[ti]={right,trap:t.pair.trap,dL:Math.abs(ab[0].L-ab[1].L)};
+  pips();
+  document.querySelectorAll('[data-pick]').forEach(b=>b.disabled=true);
+  const v=$('veil');void v.offsetWidth;v.style.transition='opacity .8s ease';v.style.opacity=1;
+  const col=['#fff','#fff'];col[lighter]='#9be3c2';drawRings(col);
+  const name='AB'[lighter],other='AB'[1-lighter],dark=ab[1-lighter];
+  let why;
+  if(t.pair.trap)why=`${name} is the lighter patch, but it sits on a lighter ground (around L* ${Math.round(ab[lighter].S)}). ${other} sits on a darker one (around L* ${Math.round(dark.S)}), and the dark around it pushes it up.`;
+  else why=right?`Here the grounds helped. The lighter patch sits in the darker surroundings, so the contrast exaggerated a real difference.`:`This one was fair: ${name} is lighter and sits in the darker surroundings, so contrast should have helped. A miss here is more likely a slip than the illusion.`;
+  $('qtext').textContent=right?'Right.':(t.pair.trap?'Caught.':'Not this time.');
+  $('msg').innerHTML=`<b class="${right?'hit':'miss'}">${right?'You saw it.':t.pair.trap?'Your eye judged the ground, not the patch.':'Missed.'}</b> ${why}
+    <div class="vals">A: L* ${ab[0].L.toFixed(1)} · B: L* ${ab[1].L.toFixed(1)} · difference ${Math.abs(ab[0].L-ab[1].L).toFixed(1)} (a Munsell value step is about 10)</div>
+    <div class="hold" style="margin-top:4px">Press and hold the picture to bring the painting back.</div>`;
+  $('nextwrap').innerHTML=`<button class="big" id="next">${ti+1<plan.length?'Next':'Now the square test'} <span aria-hidden="true">→</span></button>`;
+  $('next').onclick=next;$('next').focus({preventScroll:true});
+}
+function next(){ti++;if(ti<plan.length)startTrial();else if(own)finish();else startGauge();}
+$('canvases').addEventListener('pointerdown',e=>{
+  if(answered){$('veil').style.transition='opacity .25s';$('veil').style.opacity=0;return;}
+  const b=$('rings').getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top;
+  const d=geo.pts.map(q=>Math.hypot(q.x-x,q.y-y)),i=d[0]<d[1]?0:1;
+  if(d[i]<Math.max(48,geo.rad*3))answer(i);
+});
+const unhold=()=>{if(answered){$('veil').style.transition='opacity .4s';$('veil').style.opacity=1;}};
+['pointerup','pointerleave','pointercancel'].forEach(ev=>$('canvases').addEventListener(ev,unhold));
+document.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',()=>answer(+b.dataset.pick)));
+
+// ---- gauge: two interleaved staircases on simultaneous contrast ----
+const DARK=12, LIGHT=88, REF=50;
+function startGauge(){
+  show('s-gauge');$('pips').innerHTML='';
+  gauge={n:0,st:[{lvl:64,step:4,dir:0,rev:[]},{lvl:36,step:4,dir:0,rev:[]}],cur:null};
+  gaugeTrial();
+}
+function gaugeTrial(){
+  const g=gauge;
+  if(g.n>=GAUGE_TRIALS)return finish();
+  const si=g.n%2===0?rnd(2):1-g.cur.si; // keep both staircases moving
+  const refLeft=Math.random()<.5;
+  g.cur={si,refLeft,lvl:g.st[si].lvl};
+  const f=document.querySelectorAll('#gauge .field');
+  const set=(el,ground,patch)=>{el.style.backgroundColor=greyOf(ground);el.firstElementChild.style.backgroundColor=greyOf(patch);};
+  set(f[refLeft?0:1],DARK,REF);set(f[refLeft?1:0],LIGHT,g.cur.lvl);
+  $('gsub').textContent=`${g.n+1} of ${GAUGE_TRIALS} · Same effect, stripped down. Trust your first look.`;
+}
+function gaugeAnswer(side){
+  const g=gauge;if(!g||!g.cur)return;
+  const s=g.st[g.cur.si];
+  const saidTestLighter=(side===(g.cur.refLeft?1:0));
+  const dir=saidTestLighter?-1:1;
+  if(s.dir&&dir!==s.dir){s.rev.push(s.lvl);s.step=2;}
+  s.dir=dir;s.lvl=Math.max(20,Math.min(80,s.lvl+dir*s.step));
+  g.n++;g.cur.si=g.cur.si;gaugeTrial();
+}
+document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>gaugeAnswer(+b.dataset.g)));
+function pse(){
+  const vals=gauge.st.map(s=>{const r=s.rev.slice(-4);return r.length?r.reduce((a,b)=>a+b,0)/r.length:s.lvl;});
+  return (vals[0]+vals[1])/2;
+}
+
+// ---- result ----
+function finish(){
+  show('s-result');$('pips').innerHTML='';pips();
+  const n=results.length,right=results.filter(r=>r.right).length;
+  const traps=results.filter(r=>r.trap),fell=traps.filter(r=>!r.right).length;
+  const fair=results.filter(r=>!r.trap),fairRight=fair.filter(r=>r.right).length;
+  $('r-score').textContent=`${right} / ${n}`;
+  $('r-traps').textContent=`${fell} / ${traps.length}`;
+  const trapRate=traps.length?fell/traps.length:0;
+  const heads=[[.15,'You see the patch, not the room.'],[.4,'You mostly hold the value.'],[.7,'The room gets a vote.'],[1.01,'Your eye trusts the room.']];
+  $('r-head').textContent=heads.find(h=>trapRate<h[0])[1];
+  let lede=`On the traps, where the surroundings pull the wrong way, you were caught ${fell} of ${traps.length} times. On the fair pairs, where they push the right way, you got ${fairRight} of ${fair.length}.`;
+  if(fell>0&&fairRight===fair.length)lede+=' That pattern is the signature of simultaneous contrast, not of guessing.';
+  if(!own){
+    const P=pse(),shift=P-REF;
+    $('r-shift').textContent=(shift>=0?'+':'')+shift.toFixed(1);
+    lede+=` The square test puts a number on it: a mid grey on near-black looks ${Math.abs(shift).toFixed(0)} L* ${shift>=0?'lighter':'darker'} to you than the same grey on near-white.`;
+    $('twin').style.display='';
+    const f=document.querySelectorAll('#r-gauge .field');
+    const paint=bare=>{f[0].style.backgroundColor=greyOf(bare?50:DARK);f[1].style.backgroundColor=greyOf(bare?50:LIGHT);
+      f[0].firstElementChild.style.backgroundColor=greyOf(REF);f[1].firstElementChild.style.backgroundColor=greyOf(P);};
+    let bare=false;paint(bare);
+    $('strip').textContent='Take the grounds away';
+    $('strip').onclick=()=>{bare=!bare;paint(bare);$('strip').textContent=bare?'Put the grounds back':'Take the grounds away';};
+    $('r-twin').innerHTML=Math.abs(shift)<1.5
+      ?`These two squares are your match: you said they were the same. They are L* ${REF} and L* ${P.toFixed(1)}, which is almost exactly equal. Your eye barely drifted.`
+      :`These two squares are your match: the greys you settled on as equal. The left is L* ${REF}. The right is L* ${P.toFixed(1)}, about ${(Math.abs(shift)/10).toFixed(1)} of a Munsell value step ${shift>0?'lighter':'darker'}. Take the grounds away and see.`;
+    save({right,n,fell,traps:traps.length,shift});
+  }else{$('r-shift').textContent='—';$('twin').style.display='none';save({right,n,fell,traps:traps.length});}
+  $('r-lede').textContent=lede;
+}
+function save(r){try{const h=JSON.parse(localStorage.getItem('lighter.history')||'[]');h.unshift({...r,at:Date.now()});localStorage.setItem('lighter.history',JSON.stringify(h.slice(0,8)));}catch(e){}}
+function history(){try{const h=JSON.parse(localStorage.getItem('lighter.history')||'[]');if(!h.length)return;
+  const last=h[0];$('history').textContent=`Last time: ${last.right}/${last.n} right, caught by ${last.fell} of ${last.traps} traps${last.shift!=null?`, drift ${last.shift>=0?'+':''}${last.shift.toFixed(1)} L*`:''}.`;}catch(e){}}
+
+// ---- teaser: the classic, live ----
+(function teaser(){
+  const t=$('teaser');
+  t.innerHTML=`<div style="inset:0 50% 0 0;background:${greyOf(14)}"></div><div style="inset:0 0 0 50%;background:${greyOf(86)}"></div>
+  <div style="left:15%;top:38%;width:20%;aspect-ratio:1;background:${greyOf(50)}"></div><div style="left:65%;top:38%;width:20%;aspect-ratio:1;background:${greyOf(50)}"></div>
+  <div class="bridge" style="left:25%;top:46%;width:50%;height:4%;background:${greyOf(50)};opacity:0;transition:opacity .6s"></div>`;
+  const b=t.querySelector('.bridge');t.addEventListener('pointerenter',()=>b.style.opacity=1);t.addEventListener('pointerleave',()=>b.style.opacity=0);
+  t.addEventListener('click',()=>b.style.opacity=b.style.opacity==='1'?0:1);
+  t.title='Hover or tap: the two squares are the same grey.';
+})();
+
+// ---- wiring ----
+async function begin(src){
+  own=src||null;
+  $('go').disabled=true;$('go').innerHTML='Reading the paintings…';
+  try{await buildPlan(own);}finally{$('go').disabled=false;$('go').innerHTML='Start <span aria-hidden="true">→</span>';}
+  if(!plan.length){alert('Could not find enough flat patches with different surroundings in that picture. Try one with more light and shadow.');return;}
+  startTrial();
+}
+$('go').onclick=()=>begin();
+$('again').onclick=()=>begin();
+for(const id of ['own','own2'])$(id).addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;const img=await loadImg(URL.createObjectURL(f));begin(img);e.target.value='';});
+addEventListener('keydown',e=>{
+  if(e.target.closest&&e.target.closest('input'))return;
+  const k=e.key.toLowerCase();
+  if($('s-trial').classList.contains('on')){
+    if(!answered&&(k==='a'||k==='arrowleft'))answer(0);
+    else if(!answered&&(k==='b'||k==='arrowright'))answer(1);
+    else if(answered&&(k===' '||k==='enter')){e.preventDefault();next();}
+  }else if($('s-gauge').classList.contains('on')){
+    if(k==='arrowleft'||k==='a')gaugeAnswer(0);else if(k==='arrowright'||k==='b')gaugeAnswer(1);
+  }
+});
+addEventListener('resize',()=>{if($('s-trial').classList.contains('on')&&plan[ti]){drawTrial();if(answered){const t=plan[ti];const ab=t.swap?[t.pair.b,t.pair.a]:[t.pair.a,t.pair.b];const col=['#fff','#fff'];col[ab[0].L>ab[1].L?0:1]='#9be3c2';drawRings(col);}}});
+history();
+</script>
+</body>
+</html>

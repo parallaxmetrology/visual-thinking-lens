@@ -10,6 +10,16 @@ VTL is a small, deterministic instrument that measures the *geometry* of an imag
 
 **[Try it in your browser →](https://parallaxmetrology.github.io/visual-thinking-lens/)** Drop in a few images and see where their mass lands. Nothing is uploaded.
 
+## Play first
+
+- **[Where's the weight?](https://parallaxmetrology.github.io/visual-thinking-lens/weight/)** Tap where a picture balances, then see where the lens puts it. Old paintings and AI images, eight rounds. The catch: a blind tap at dead center is a surprisingly strong guess. Can you beat it?
+- **[Lighter](https://parallaxmetrology.github.io/visual-thinking-lens/lighter/)** Which spot in a real painting is lighter? Painters spend years learning to see value; the eye is bad at it on purpose. Three minutes, then a short test of how far your eye drifts.
+
+Cousins on [parallaxmetrology.com](https://www.parallaxmetrology.com), built on related (not identical) kernels:
+[The Synth](https://www.parallaxmetrology.com/vtlapps/the-synth/) runs the instrument backwards: set target coordinates and it draws a composition that lands on them, then measures itself to prove it ·
+[The Crit](https://www.parallaxmetrology.com/vtlapps/the-crit/) and [The Field](https://www.parallaxmetrology.com/vtlapps/the-field/) read one image's structure and color ·
+[Interestingness](https://www.parallaxmetrology.com/interestingness.html), the choice detector: *a line pressed far from the middle is improbable by luck, the fingerprint of a choice; every line dead centre is a prior.*
+
 ---
 
 ## Install

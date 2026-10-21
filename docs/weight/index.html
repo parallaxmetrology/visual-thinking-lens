@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where's the Weight?</title>
+<meta name="description" content="Tap where you think a picture's visual weight balances, then see where the Visual Thinking Lens puts it. Eight pictures: old paintings and AI images. Runs in your browser.">
+<meta property="og:title" content="Where's the Weight?">
+<meta property="og:description" content="Tap where a picture's weight balances. Then see where the instrument puts it. Do you pull toward the center?">
+<meta property="og:image" content="https://parallaxmetrology.github.io/visual-thinking-lens/assets/og-weight.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Mono:wght@400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #111; --raised: #161616; --border: #1e1e1e; --border-light: #2a2a2a;
+    --text: #e8e4dc; --muted: #8a867f; --dim: #555;
+    --accent: #c4a882; --accent-dim: rgba(196,168,130,.10); --accent-border: rgba(196,168,130,.25);
+    --vtl: #7a9e8e; --you: #7fb3e6; --lens: #e66e5a;
+    --mono: 'DM Mono', ui-monospace, monospace; --serif: 'Cormorant Garamond', Georgia, serif; --sans: 'DM Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  header { border-bottom: 1px solid var(--border); }
+  header .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; gap: 16px; }
+  .logo { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  nav a { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-left: 20px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--vtl); }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 5vw, 54px); line-height: 1.08; margin: 10px 0 12px; }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin-bottom: 10px; }
+  .lede { color: var(--muted); max-width: 620px; }
+  .lede b { color: var(--text); font-weight: 400; }
+  button, .btn { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text); background: transparent; border: 1px solid var(--border-light); border-radius: 4px; padding: 11px 16px; cursor: pointer; }
+  button:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { border-color: var(--accent-border); color: var(--accent); background: var(--accent-dim); }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  section { padding: 40px 0; }
+
+  #intro .row { margin-top: 26px; }
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 26px; margin-top: 32px; }
+  .how div { border-top: 1px solid var(--border); padding-top: 10px; font-size: 14px; color: var(--muted); }
+  .how b { display: block; font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+
+  .hud { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .hud .score { color: var(--accent); }
+  .stage { position: relative; background: #000; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; touch-action: manipulation; }
+  .stage canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+  .prompt { margin: 14px 0 0; color: var(--muted); font-size: 15px; min-height: 48px; }
+  .prompt b { color: var(--text); font-weight: 400; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .result { display: grid; grid-template-columns: auto 1fr; gap: 6px 22px; margin: 14px 0; align-items: baseline; }
+  .result .big { font-family: var(--serif); font-size: 40px; color: var(--accent); line-height: 1; }
+  .credit { font-size: 12px; color: var(--dim); margin-top: 8px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin: 22px 0; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+  .stat .k { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+  .stat .v { font-family: var(--serif); font-size: 34px; color: var(--text); line-height: 1.1; margin-top: 4px; }
+  .stat .n { font-size: 13px; color: var(--muted); }
+  #biasmap { width: 260px; max-width: 100%; aspect-ratio: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+  .verdict { font-family: var(--serif); font-size: 24px; line-height: 1.3; max-width: 700px; }
+  .verdict em { color: var(--accent); font-style: normal; }
+  .share { margin-top: 18px; background: var(--raised); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: pre-wrap; }
+  .why { color: var(--muted); font-size: 14px; max-width: 700px; }
+  .why p + p { margin-top: 10px; }
+  footer { border-top: 1px solid var(--border); padding: 26px 0 44px; color: var(--dim); font-size: 13px; }
+  @media (max-width: 600px) { nav a:not(:last-child) { display: none; } .wrap { padding: 0 16px; } }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="../">Visual Thinking Lens</a>
+  <nav><a href="../">Measure</a><a href="../lighter/">Lighter</a><a href="https://github.com/parallaxmetrology/visual-thinking-lens">GitHub</a></nav>
+</div></header>
+
+<main class="wrap">
+  <section id="intro">
+    <div class="eyebrow">A looking game · eight pictures</div>
+    <h1>Where's the weight?</h1>
+    <p class="lede">Every picture balances somewhere. Tap the spot where you feel <b>this picture's visual weight</b> settles: not the subject, the <b>mass</b>, the place all its marks, edges and texture would balance on a fingertip. Then see where the instrument puts it.</p>
+    <div class="row">
+      <button class="primary" id="start">Play eight pictures</button>
+      <label class="btn" for="own">Use my own pictures</label>
+      <input id="own" type="file" accept="image/*" multiple hidden>
+    </div>
+    <div class="how">
+      <div><b>You</b>Tap once. Trust your eye, not your idea of the subject.</div>
+      <div><b>The lens</b>Measures where structural mass sits, deterministically, in your browser. No AI judges anything.</div>
+      <div><b>The catch</b>A lazy tap at dead center is a strong guess: weight hides near the middle more than you'd think. Can you beat it?</div>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div class="hud"><span id="round">Picture 1 of 8</span><span class="score" id="total">0 pts</span></div>
+    <div class="stage"><canvas id="cv" aria-label="Picture: tap where its weight balances"></canvas></div>
+    <div class="legend" id="legend" hidden>
+      <span><i class="dot" style="background:var(--you)"></i>you</span>
+      <span><i class="dot" style="background:var(--lens)"></i>the lens</span>
+      <span><i class="dot" style="background:var(--vtl)"></i>frame center</span>
+      <span><i class="dot" style="background:var(--accent)"></i>measured mass</span>
+    </div>
+    <p class="prompt" id="prompt">Tap where the weight balances.</p>
+    <div id="after" hidden>
+      <div class="result"><span class="big" id="pts">0</span><span id="note"></span></div>
+      <div class="row"><button class="primary" id="next">Next picture</button><button id="toggle">Show the picture</button></div>
+    </div>
+    <p class="credit" id="credit"></p>
+  </section>
+
+  <section id="summary" hidden>
+    <div class="eyebrow">Your eye, measured</div>
+    <h2 id="sumhead"></h2>
+    <p class="verdict" id="verdict"></p>
+    <div class="summary-grid" id="stats"></div>
+    <div class="row" style="align-items:flex-start; gap:24px">
+      <canvas id="biasmap" width="520" height="520" aria-label="Where your taps landed relative to the lens"></canvas>
+      <p class="why" style="flex:1 1 280px">Each dot is one picture: where you tapped, relative to where the lens found the weight (the cross). A cloud leaning one way is a habit of your eye. A cloud gathered toward the frame's center means you pull toward the middle more than the pictures do.</p>
+    </div>
+    <div class="share" id="share"></div>
+    <div class="row" style="margin-top:14px"><button class="primary" id="copy">Copy result</button><button id="again">Play again</button><a class="btn" href="../">Measure your own images</a></div>
+  </section>
+
+  <section class="why" style="border-top:1px solid var(--border)">
+    <p><b style="color:var(--text);font-weight:400">What the lens measures.</b> It finds the mid-strength edges, marks and texture in the picture (the 85th–97th percentile of the gradient field) and takes their center. It knows nothing about faces, objects or meaning. A busy background can outweigh a quiet subject. That gap is the lesson.</p>
+    <p>Pictures are old paintings (public domain) and AI-generated images. The instrument is the open-source <a href="https://github.com/parallaxmetrology/visual-thinking-lens">Visual Thinking Lens</a>, kernel <code>canon3-v8</code>, ported to JavaScript; browser numbers are close to, not identical with, the Python reference. Nothing you upload leaves your device.</p>
+  </section>
+</main>
+
+<footer><div class="wrap">Parallax Metrology · <a href="https://www.parallaxmetrology.com">parallaxmetrology.com</a> · <a href="https://www.artistinfluencer.com">artistinfluencer.com</a></div></footer>
+
+<script type="module">
+import { TARGET_MAX_SIDE } from "../kernel.js";
+
+const PAINTINGS = [
+  { src: "../lighter/works/caravaggio.jpg", credit: "Caravaggio, The Calling of Saint Matthew (1599–1600)", kind: "painting" },
+  { src: "../lighter/works/vermeer.jpg", credit: "Vermeer, The Milkmaid (c. 1658)", kind: "painting" },
+  { src: "../lighter/works/stevens.jpg", credit: "Alfred Stevens, In the Studio (1888)", kind: "painting" },
+  { src: "../lighter/works/bouguereau.jpg", credit: "Bouguereau, Breton Brother and Sister (1871)", kind: "painting" },
+  { src: "../lighter/works/hanabusa.jpg", credit: "Hanabusa Itchō, hanging scroll (c. 1710)", kind: "painting" },
+  { src: "../lighter/works/lorenzetti.jpg", credit: "Pietro Lorenzetti, The Crucifixion", kind: "painting" },
+];
+const AI = ["frog", "portrait", "landscape", "still_life", "drawing", "collapse", "room", "walking", "study", "abstract"]
+  .map((n) => ({ src: `../samples/${n}.jpg`, credit: "AI-generated image (VTL sample set)", kind: "ai" }));
+
+const ROUNDS = 8;
+const $ = (id) => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+const worker = new Worker("../worker.js", { type: "module" });
+const pending = new Map(); let nextId = 0;
+worker.onmessage = (e) => { const cb = pending.get(e.data.id); pending.delete(e.data.id); cb(e.data); };
+
+let deck = [], i = 0, total = 0, results = [], cur = null, showPicture = false;
+
+const shuffle = (a) => { for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+
+function measure(bmp) {
+  const s = TARGET_MAX_SIDE / Math.max(bmp.width, bmp.height);
+  const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
+  const oc = new OffscreenCanvas(w, h), octx = oc.getContext("2d", { willReadFrequently: true });
+  octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = "high";
+  octx.drawImage(bmp, 0, 0, w, h);
+  const data = octx.getImageData(0, 0, w, h).data;
+  return new Promise((resolve, reject) => {
+    const id = nextId++;
+    pending.set(id, (d) => (d.error ? reject(new Error(d.error)) : resolve({ ...d, w, h })));
+    worker.postMessage({ id, buffer: data.buffer, w, h }, [data.buffer]);
+  });
+}
+
+async function loadItem(item) {
+  const blob = item.file || await (await fetch(item.src)).blob();
+  const bmp = await createImageBitmap(blob, { imageOrientation: "from-image" });
+  return { ...item, bmp, reading: measure(bmp) };
+}
+
+function startGame(items) {
+  deck = items; i = 0; total = 0; results = [];
+  $("intro").hidden = true; $("summary").hidden = true; $("game").hidden = false;
+  nextRound();
+}
+
+async function nextRound() {
+  if (i >= deck.length) return showSummary();
+  $("after").hidden = true; $("legend").hidden = true; showPicture = false;
+  $("round").textContent = `Picture ${i + 1} of ${deck.length}`;
+  $("total").textContent = `${total} pts`;
+  $("prompt").innerHTML = "Loading…";
+  $("credit").textContent = "";
+  cur = await (deck[i].preloaded || loadItem(deck[i]));
+  if (i + 1 < deck.length && !deck[i + 1].preloaded) deck[i + 1].preloaded = loadItem(deck[i + 1]);
+  const maxW = Math.min(900, cv.parentElement.clientWidth * devicePixelRatio);
+  const s = maxW / cur.bmp.width;
+  cv.width = Math.round(cur.bmp.width * s); cv.height = Math.round(cur.bmp.height * s);
+  draw();
+  $("prompt").innerHTML = "Tap where this picture's <b>weight</b> balances.";
+  cur.tap = null;
+  window.scrollTo({ top: $("game").offsetTop - 10, behavior: "smooth" });
+}
+
+function draw() {
+  const r = cur;
+  ctx.filter = r.tap && !showPicture ? "grayscale(1) brightness(.5)" : "none";
+  ctx.drawImage(r.bmp, 0, 0, cv.width, cv.height);
+  ctx.filter = "none";
+  if (!r.tap) return;
+  const W = cv.width, H = cv.height, R = Math.max(7, W / 70);
+  if (r.result && !showPicture) {
+    const { mask, w, h } = r.result;
+    const img = ctx.getImageData(0, 0, W, H);
+    const sx = w / W, sy = h / H;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (mask[Math.min(h - 1, (y * sy) | 0) * w + Math.min(w - 1, (x * sx) | 0)]) {
+        const k = (y * W + x) * 4; img.data[k] = 196; img.data[k + 1] = 168; img.data[k + 2] = 130;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  // frame center
+  ctx.strokeStyle = "#7a9e8e"; ctx.lineWidth = Math.max(2, W / 400);
+  ctx.beginPath(); ctx.moveTo(W / 2 - 2.5 * R, H / 2); ctx.lineTo(W / 2 + 2.5 * R, H / 2); ctx.moveTo(W / 2, H / 2 - 2.5 * R); ctx.lineTo(W / 2, H / 2 + 2.5 * R); ctx.stroke();
+  const tx = r.tap.x * W, ty = r.tap.y * H;
+  if (r.lens) {
+    const lx = r.lens.x * W, ly = r.lens.y * H;
+    ctx.setLineDash([R * 0.8, R * 0.6]); ctx.strokeStyle = "rgba(232,228,220,.85)";
+    ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(lx, ly); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#e66e5a"; ctx.strokeStyle = "#0a0a0a"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(lx, ly, R, 0, 7); ctx.fill(); ctx.stroke();
+  }
+  ctx.fillStyle = "#7fb3e6"; ctx.strokeStyle = "#0a0a0a"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(tx, ty, R, 0, 7); ctx.fill(); ctx.stroke();
+}
+
+cv.addEventListener("pointerdown", async (e) => {
+  if (!cur || cur.tap) return;
+  const b = cv.getBoundingClientRect();
+  cur.tap = { x: (e.clientX - b.left) / b.width, y: (e.clientY - b.top) / b.height };
+  draw();
+  $("prompt").textContent = "Measuring…";
+  try {
+    const res = await cur.reading;
+    cur.result = res;
+    const k = res.kernel;
+    if (!k.valid) { $("prompt").textContent = "The lens couldn't find enough structure in this one. Skipping."; i++; setTimeout(nextRound, 1400); return; }
+    // delta = (centroid - (w-1)/2) / w, so the centroid's position across the frame is delta + 0.5
+    cur.lens = { x: k.delta_x + 0.5, y: k.delta_y + 0.5 };
+    reveal(k);
+  } catch (err) {
+    $("prompt").textContent = `Couldn't measure this picture (${err.message}). Skipping.`; i++; setTimeout(nextRound, 1400);
+  }
+});
+
+function reveal(k) {
+  const t = cur.tap, l = cur.lens, c = { x: 0.5, y: 0.5 };
+  const d = Math.hypot(t.x - l.x, t.y - l.y);
+  const pts = Math.round(100 * Math.max(0, 1 - d / 0.3));
+  const lensFromCenter = Math.hypot(l.x - c.x, l.y - c.y), youFromCenter = Math.hypot(t.x - c.x, t.y - c.y);
+  const beat = d < lensFromCenter;  // closer than a blind tap at dead center would have been
+  results.push({ d, pts, kind: cur.kind, dx: t.x - l.x, dy: t.y - l.y, pull: lensFromCenter - youFromCenter, beat, dc: lensFromCenter });
+  total += pts;
+  $("total").textContent = `${total} pts`;
+  $("pts").textContent = pts;
+  const dir = [];
+  if (Math.abs(t.y - l.y) > 0.04) dir.push(t.y < l.y ? "higher" : "lower");
+  if (Math.abs(t.x - l.x) > 0.04) dir.push(t.x < l.x ? "further left" : "further right");
+  const where = d < 0.05 ? "Almost exactly where the lens found it." : `You felt it ${dir.join(" and ") || "a little off"} than the lens does.`;
+  const shape = k.sdi > 0.26 ? "The mass here is spread wide, so its center is a balance point, not a thing."
+    : k.mu > 0.066 ? "One body dominates the mass here."
+    : "The mass is scattered in small pieces across the picture.";
+  const vsCenter = beat
+    ? `<b style="color:var(--text);font-weight:400">You beat a blind tap at dead center</b> (it would have missed by ${lensFromCenter.toFixed(2)}).`
+    : `A blind tap at dead center would have been closer (miss ${lensFromCenter.toFixed(2)} vs your ${d.toFixed(2)}). Weight hides near the middle more often than eyes expect.`;
+  $("note").innerHTML = `${where} ${vsCenter}<br><span style="color:var(--muted)">${shape}</span>`;
+  $("prompt").innerHTML = "Gold is what the lens counted as weight. Blue is you, red is the lens, the cross is the frame center.";
+  $("credit").textContent = cur.credit;
+  $("legend").hidden = false; $("after").hidden = false;
+  $("toggle").textContent = "Show the picture";
+  draw();
+  i++;
+}
+
+$("next").addEventListener("click", nextRound);
+$("toggle").addEventListener("click", () => { showPicture = !showPicture; $("toggle").textContent = showPicture ? "Show the measurement" : "Show the picture"; draw(); });
+
+function showSummary() {
+  $("game").hidden = true; $("summary").hidden = false;
+  const n = results.length || 1, mean = (a) => a.reduce((s, x) => s + x, 0) / (a.length || 1);
+  const meanD = mean(results.map((r) => r.d));
+  const pull = mean(results.map((r) => r.pull));
+  const bx = mean(results.map((r) => r.dx)), by = mean(results.map((r) => r.dy));
+  const pd = results.filter((r) => r.kind === "painting"), ad = results.filter((r) => r.kind === "ai");
+  const max = n * 100;
+  const beats = results.filter((r) => r.beat).length;
+  $("sumhead").textContent = `${total} of ${max} points · beat the center ${beats} of ${n}`;
+  const pullTxt = pull > 0.02 ? "You pull <em>toward the center</em>: the pictures' weight sits further out than you feel it."
+    : pull < -0.02 ? "You pull <em>away from the center</em>: you feel the weight further out than the pictures carry it."
+    : "Your sense of center matches the pictures': <em>no pull toward or away from the middle</em>.";
+  const lean = [];
+  if (Math.abs(by) > 0.025) lean.push(by < 0 ? "upward" : "downward");
+  if (Math.abs(bx) > 0.025) lean.push(bx < 0 ? "to the left" : "to the right");
+  const leanTxt = lean.length ? ` Your taps also lean <em>${lean.join(" and ")}</em> of where the mass is.` : " No consistent lean up, down, left or right.";
+  $("verdict").innerHTML = pullTxt + leanTxt;
+  const stat = (k, v, note) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="n">${note}</div></div>`;
+  $("stats").innerHTML =
+    stat("Average miss", meanD.toFixed(3), "in frame widths; 0.05 is very close") +
+    stat("Beat the center", `${beats}/${n}`, "rounds closer than a blind tap at dead center") +
+    stat("Center pull", (pull >= 0 ? "+" : "") + pull.toFixed(3), "+ means you pull inward") +
+    (pd.length ? stat("Paintings", mean(pd.map((r) => r.d)).toFixed(3), `average miss over ${pd.length}`) : "") +
+    (ad.length ? stat("AI images", mean(ad.map((r) => r.d)).toFixed(3), `average miss over ${ad.length}`) : "");
+  drawBias();
+  const pullWord = pull > 0.02 ? "I pull toward the center" : pull < -0.02 ? "I pull away from the center" : "no center pull";
+  $("share").textContent = `Where's the Weight? ${total}/${max} · beat the center ${beats}/${n} · ${pullWord}\n${location.href.split("#")[0]}`;
+}
+
+function drawBias() {
+  const c = $("biasmap"), g = c.getContext("2d"), S = c.width, m = S / 2, scale = S / 0.6;
+  g.clearRect(0, 0, S, S);
+  g.strokeStyle = "#2a2a2a"; g.lineWidth = 1;
+  for (const r of [0.05, 0.15, 0.25]) { g.beginPath(); g.arc(m, m, r * scale, 0, 7); g.stroke(); }
+  g.strokeStyle = "#e66e5a"; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(m - 14, m); g.lineTo(m + 14, m); g.moveTo(m, m - 14); g.lineTo(m, m + 14); g.stroke();
+  for (const r of results) {
+    g.beginPath(); g.arc(m + r.dx * scale, m + r.dy * scale, 10, 0, 7);
+    g.fillStyle = r.kind === "painting" ? "rgba(127,179,230,.9)" : "rgba(196,168,130,.9)"; g.fill();
+  }
+  g.fillStyle = "#555"; g.font = "18px 'DM Mono', monospace";
+  g.fillText("blue = paintings · gold = AI", 14, S - 16);
+}
+
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("share").textContent); $("copy").textContent = "Copied"; } catch { $("copy").textContent = "Select and copy above"; }
+  setTimeout(() => ($("copy").textContent = "Copy result"), 1800);
+});
+$("again").addEventListener("click", () => startGame(buildDeck()));
+$("start").addEventListener("click", () => startGame(buildDeck()));
+$("own").addEventListener("change", (e) => {
+  const files = [...e.target.files].filter((f) => f.type.startsWith("image/")).slice(0, 12);
+  if (files.length) startGame(files.map((f) => ({ file: f, credit: f.name, kind: "yours" })));
+  e.target.value = "";
+});
+
+function buildDeck() {
+  const p = shuffle([...PAINTINGS]).slice(0, ROUNDS / 2), a = shuffle([...AI]).slice(0, ROUNDS / 2);
+  return shuffle([...p, ...a]).map((x) => ({ ...x }));
+}
+</script>
+</body>
+</html>

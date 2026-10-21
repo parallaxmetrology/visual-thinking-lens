@@ -11,6 +11,8 @@ on the sample images (see `tests/test_golden.py`).
 - `vtl.fingerprint`, `vtl.rigidity`, `vtl.compare`: corpus readings from the Engine Fingerprint notebook
 - `vtl` command line, four example notebooks, browser demo
 
+Games in the browser demo: **Where's the weight?** (`docs/weight/`, your eye vs the lens vs a blind center tap) and **Lighter** (`docs/lighter/`, value judgment in public-domain paintings). Share-preview images for all three pages.
+
 Agent skills (`skills/`): `vtl`, `vtl-color`, `vtl-radial`, `vtl-picture-this`, `measurement-claim-auditor`, distilled from the 2025 skill library and recalibrated to empirical reference ranges (`tools/reference_ranges.py`).
 
 Deliberate differences from the notebooks:
