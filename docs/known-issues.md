@@ -32,4 +32,4 @@ The kernel, color and radial instruments each use the mask and decode path of th
 
 ## 6. Numerics depend on library versions
 
-Golden tests pin outputs to 1e-7 against the notebooks under the versions used to generate them. OpenCV, scikit-image (skeletonize) and SciPy updates can shift values slightly. CI runs the golden tests; if they break after a dependency bump, report it.
+Golden tests pin outputs to 1e-7 against the notebooks. The goldens were generated on macOS arm64. On x86-64 Linux (CI), the mass masks are **bit-identical** (same `mask_sha256`), but `d_s` differs by up to ~1e-3 relative (~2e-6 absolute; skeleton and distance transform), and the color centroids by ~1e-5 relative (float32 reductions). The tests allow exactly those tolerances. OpenCV, scikit-image and SciPy updates can shift values too. If the golden tests break after a dependency bump, report it.

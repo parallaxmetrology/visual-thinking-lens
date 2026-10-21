@@ -22,6 +22,22 @@ GOLDEN = ROOT / "tests" / "golden"
 
 REL, ABS = 1e-7, 1e-9
 
+# Goldens were generated on macOS arm64. On x86-64 Linux, masks are bit-identical
+# (mask_sha256 matches) but two quantities differ in the last float digits:
+#   d_s        skeleton + distance transform: up to ~1e-3 relative (~2e-6 absolute)
+#   *_delta_*  color centroids from float32 reductions (SIMD width): ~1e-5 relative
+# These are far below interpretive resolution; everything else stays at 1e-7.
+PLATFORM_TOL = {"d_s": (1e-3, 1e-8)}
+COLOR_CENTROID_TOL = (1e-5, 1e-9)
+
+
+def _tol(key):
+    if key in PLATFORM_TOL:
+        return PLATFORM_TOL[key]
+    if "_delta_" in key:
+        return COLOR_CENTROID_TOL
+    return REL, ABS
+
 
 def _load(name):
     return json.loads((GOLDEN / f"{name}.json").read_text())
@@ -34,7 +50,8 @@ def _check(got: dict, want: dict, image: str):
         if isinstance(expected, str) or isinstance(expected, bool):
             assert actual == expected, f"{image}: {key} = {actual!r}, notebook = {expected!r}"
         else:
-            assert math.isclose(float(actual), float(expected), rel_tol=REL, abs_tol=ABS), \
+            rel, abs_ = _tol(key)
+            assert math.isclose(float(actual), float(expected), rel_tol=rel, abs_tol=abs_), \
                 f"{image}: {key} = {actual!r}, notebook = {expected!r}"
 
 
