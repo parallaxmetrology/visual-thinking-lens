@@ -16,4 +16,6 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: pip install -e ".[dev]"
       - run: ruff check src tests
+      - name: drift vs golden (informational)
+        run: python tools/golden_diff.py
       - run: pytest -q
