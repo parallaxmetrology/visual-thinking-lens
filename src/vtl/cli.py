@@ -40,7 +40,7 @@ def _cmd_fingerprint(a):
     group = a.group_by or (midjourney_prompt if a.mj_prompts else None)
     if group is not None:
         table, overall = rigidity(df, group)
-        print("\nCreative rigidity (between-prompt std / within-prompt std)\n")
+        print("\nCreative rigidity (total std / within-prompt std)\n")
         print(table.round(4).to_string())
         reading = "rigid" if overall < 1.5 else "moderate" if overall < 2.5 else "flexible"
         print(f"\nOverall rigidity ratio (median): {overall:.3f}  -> {reading}")

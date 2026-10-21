@@ -45,10 +45,16 @@ EPS = 1e-9
 
 # Perona–Malik anisotropic diffusion (optional, off by default).
 # Turn on for JPEG-heavy, grainy, scanned or re-saved images; leave off for clean
-# PNG exports and any baseline that must match earlier CSVs.
+# exports and any baseline that must match earlier CSVs.
 # Perona & Malik (1990), IEEE TPAMI 12(7):629–639.
+#
+# Deliberate change from the Canon 3 notebook: the notebook used kappa=30 on
+# [0,1] luminance, which makes conduction ~1 everywhere (plain blur, not edge-
+# preserving), and np.roll, which wraps opposite image edges into each other.
+# Here kappa=0.12 (= 30/255, as in the Image Structure Reader) and borders are
+# mirrored. Only affects diffusion=True; see docs/known-issues.md.
 PM_N_ITERATIONS = 10
-PM_KAPPA = 30.0
+PM_KAPPA = 0.12
 PM_GAMMA = 0.1
 PM_OPTION = 1
 
@@ -68,13 +74,15 @@ class Fields:
 # ── Preprocessing ────────────────────────────────────────────────────────────
 def perona_malik(gray: np.ndarray, n_iter: int = PM_N_ITERATIONS, kappa: float = PM_KAPPA,
                  gamma: float = PM_GAMMA, option: int = PM_OPTION) -> np.ndarray:
-    """Edge-preserving smoothing on float [0,1] luminance. Deterministic."""
+    """Edge-preserving smoothing on float [0,1] luminance (kappa in [0,1] units).
+    Borders are mirrored, so opposite edges never leak into each other. Deterministic."""
     u = gray.copy()
     for _ in range(n_iter):
-        dn = np.roll(u, 1, axis=0) - u
-        ds = np.roll(u, -1, axis=0) - u
-        de = np.roll(u, -1, axis=1) - u
-        dw = np.roll(u, 1, axis=1) - u
+        p = np.pad(u, 1, mode="edge")
+        dn = p[:-2, 1:-1] - u
+        ds = p[2:, 1:-1] - u
+        de = p[1:-1, 2:] - u
+        dw = p[1:-1, :-2] - u
         if option == 1:
             c = [np.exp(-(d / kappa) ** 2) for d in (dn, ds, de, dw)]
         else:
@@ -264,7 +272,7 @@ def measure_bgr(img_bgr: np.ndarray, diffusion: bool = False) -> Tuple[Dict, Fie
 
 def measure(image: ImageLike, diffusion: bool = False, max_side: int = TARGET_MAX_SIDE,
             return_fields: bool = False):
-    """Measure one image (path, bytes, PIL image, or BGR array).
+    """Measure one image (path, bytes, PIL image, or RGB array).
 
     Returns the kernel dict, or (dict, Fields) with return_fields=True.
 

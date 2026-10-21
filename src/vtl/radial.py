@@ -213,6 +213,8 @@ def eligibility(mask_bin: np.ndarray, angv: np.ndarray, w_ang: float = 0.35, w_i
 
 
 def classify(RCf: float, RCs: float, dRC: float, Es: float, void_ratio: float = None) -> str:
+    if void_ratio is not None and 1.0 - void_ratio < RDC_MASK_AREA_MIN:
+        return "No mass detected (nothing to interpret)"
     if Es < 0.38:
         return "Mass present but radially ineligible (do not interpret RC_s)"
     if void_ratio is not None and void_ratio > 0.85 and abs(dRC) < 0.03 and max(RCf, RCs) > 0.75:

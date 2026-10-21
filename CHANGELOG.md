@@ -10,3 +10,11 @@ on the sample images (see `tests/test_golden.py`).
 - `vtl.measure_radial`: dual-center radial compliance `rca2-5.21`
 - `vtl.fingerprint`, `vtl.rigidity`, `vtl.compare`: corpus readings from the Engine Fingerprint notebook
 - `vtl` command line, four example notebooks, browser demo
+
+Deliberate differences from the notebooks:
+
+- `diffusion=True` (Perona–Malik) uses κ = 0.12 on [0,1] luminance and mirrored borders. The notebooks' κ = 30 made it a plain blur that also wrapped image edges. The default kernel (diffusion off) is unchanged.
+- Arrays passed to any `vtl` function are RGB (RGBA and gray accepted). PIL images are EXIF-corrected like files.
+- `measure_many` writes `relpath` instead of absolute paths, and records unreadable files as `valid=0` with an `error` instead of stopping.
+- `fingerprint` / `rigidity` / `compare` skip rows with mask QA `FAIL`. Rigidity's numerator is labeled `total_std`, which is what the notebook computed.
+- RCA-2 labels an empty mask "No mass detected" instead of "radially ineligible".

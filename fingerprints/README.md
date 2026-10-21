@@ -21,6 +21,17 @@ Firefly 1:1                67%               0.406          0.227
 
 The obvious story, "AI centers, painters don't," **isn't what these numbers say.** The museum set is the most centered here. Where it does separate from Firefly is peripheral pull (xₚ, Cohen's d ≈ 1.4) and dispersion (SDI, d ≈ 1.0): paintings carry more structure out toward the edges and spread it wider. Firefly varies more in packing density (ρᵣ) and cohesion (μ).
 
+**Centered how?** A centered centroid can come from one body in the middle or from masses balancing across it ([interpretation](../docs/interpretation.md#a-centered-centroid-has-two-very-different-causes)). Among the images that read as centered (within 0.15):
+
+```
+                  one dominant body (μ > 0.1)   mass spread wide (SDI > 0.25)
+museum reproductions          4%                           59%
+AI, mixed                    12%                           38%
+Firefly 1:1                  31%                           25%
+```
+
+The museum set mostly reaches center by spreading and balancing; Firefly more often parks one body there. The cutoffs are quick, untested choices: read this as a direction worth testing, not a result. The kernel doesn't detect counterbalance directly. See the [Image Structure Reader](https://www.parallaxmetrology.com/isr.html) for that.
+
 What this doesn't control: the sets weren't matched on subject (Firefly prompts are everyday scenes; the museum set's subjects weren't chosen to match them), and museum reproductions are usually cropped to the picture edge, while generated images have no edge to crop to. A subject-matched comparison (same subjects, painted vs generated) would say much more. If you have a set like that, please add it.
 
 Reproduce:

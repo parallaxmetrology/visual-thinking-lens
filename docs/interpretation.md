@@ -6,6 +6,8 @@ VTL is a coordinate system, not a grading rubric. A thermometer reading 0 °C is
 
 A photographer who centers a portrait has made a choice. A model that centers *everything*, whatever the prompt, has a default. One image can't tell these apart. A set of images can.
 
+*Illustrative values, not measurements:*
+
 | | Δx | μ | xₚ | θ | reads as |
 |---|---|---|---|---|---|
 | portrait | 0.00 | 0.85 | 0.35 | 0.65 | centered, unified, aligned |
@@ -13,6 +15,27 @@ A photographer who centers a portrait has made a choice. A model that centers *e
 | street | 0.15 | 0.15 | 0.55 | 0.08 | asymmetric, fragmented, peripheral |
 
 All three are valid. VTL places them; it doesn't rank them.
+
+## A centered centroid has two very different causes
+
+Δx ≈ 0 and Δy ≈ 0 say where the *average* of the mass sits, not how the mass got there. Two opposite compositions read identically on placement:
+
+- **one body in the middle:** a single subject placed at center
+- **counterbalance:** two or more masses that offset each other across the center, the way much painting works
+
+Placement alone can't tell them apart. Read it with:
+
+- **μ (cohesion):** high means one dominant body; low means many pieces
+- **SDI (dispersion):** low means mass gathered near its centroid; high means spread out
+- **Radial compliance (`vtl.measure_radial`):** whether mass falls off in rings around the frame center or around the subject. This is what RCA-2 was built to separate.
+
+In the sample [fingerprints](../fingerprints/), the centered museum reproductions mostly get there by spreading and balancing (low μ, high SDI), while centered Firefly images more often hold one body in the middle.
+
+The kernel doesn't measure counterbalance directly: it doesn't find the individual masses and check whether they answer each other. The [Image Structure Reader](https://www.parallaxmetrology.com/isr.html) does. It reads regions and their relations as one system and labels states such as *counterweighted*. ISR computes its own fields at its own working resolution, so its numbers aren't interchangeable with the kernel's.
+
+## Every reading is of a reproduction
+
+A number describes the image file you measured, not the painting on the wall: object × reproduction chain × resolution. Cropping, the photographer's framing, compression and scale all move the coordinates. Record where images came from, and compare like with like.
 
 ## No single score equals collapse
 

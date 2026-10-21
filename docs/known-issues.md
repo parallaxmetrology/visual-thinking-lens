@@ -45,3 +45,9 @@ On one machine and one set of library versions, the kernel is fully deterministi
 Radial compliance matched exactly; the color kernel agreed to about 1e-7.
 
 None of this changes how an image reads, but it does mean `mask_sha256` only matches on the same platform. The golden tests are strict (1e-7) on the reference platform (macOS arm64) and use these measured tolerances elsewhere. For a study, measure every image on the same machine and record `kernel_version` and library versions. OpenCV, scikit-image and SciPy updates can shift values too. If the drift report grows after a dependency bump, report it.
+
+## 7. Perona–Malik in the notebooks was a blur (fixed here)
+
+The Canon 3, Color and Fingerprint notebooks set κ = 30 for Perona–Malik but ran it on luminance scaled to [0,1]. Edge differences never exceed 1, so the conduction term is about 1 everywhere: the "edge-preserving" filter acts as plain isotropic diffusion (a blur). It also used `np.roll`, which wraps each image edge into the opposite one. On a test step edge, the notebook version smears the edge to 0.35/0.65 and leaks it across the frame border.
+
+VTL uses κ = 0.12 (30/255, matching the Image Structure Reader) and mirrored borders: the step edge stays 0/1 and noise in flat regions drops about 5×. **This only affects `diffusion=True`**; the default kernel is unchanged. Results made with diffusion on in those notebooks were measured through a blur, and aren't comparable with `vtl.measure(..., diffusion=True)`.

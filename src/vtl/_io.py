@@ -16,15 +16,29 @@ ImageLike = Union[str, os.PathLike, bytes, Image.Image, np.ndarray]
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
 
 
-def find_images(*paths: Union[str, os.PathLike]) -> List[Path]:
-    """Expand files and folders (recursively) into a sorted list of image paths."""
-    out: List[Path] = []
+def find_images_with_roots(*paths: Union[str, os.PathLike]) -> List[Tuple[Path, str]]:
+    """Expand files and folders (recursively) into sorted (path, relative name) pairs.
+
+    The relative name is the path below the folder that was given (or the bare
+    filename for files), so output never carries the machine's absolute paths and
+    same-named files in different subfolders stay distinguishable. Hidden files and
+    hidden folders (e.g. .ipynb_checkpoints) are skipped.
+    """
+    found = {}
     for p in map(Path, paths):
         if p.is_dir():
-            out += [q for q in p.rglob("*") if q.suffix.lower() in IMAGE_EXTS and not q.name.startswith(".")]
+            for q in p.rglob("*"):
+                rel = q.relative_to(p)
+                if q.suffix.lower() in IMAGE_EXTS and not any(part.startswith(".") for part in rel.parts):
+                    found.setdefault(q, rel.as_posix())
         elif p.suffix.lower() in IMAGE_EXTS:
-            out.append(p)
-    return sorted(set(out))
+            found.setdefault(p, p.name)
+    return sorted(found.items())
+
+
+def find_images(*paths: Union[str, os.PathLike]) -> List[Path]:
+    """Expand files and folders (recursively) into a sorted list of image paths."""
+    return [p for p, _ in find_images_with_roots(*paths)]
 
 
 def _resize_max_side(img: np.ndarray, max_side: int) -> np.ndarray:
@@ -38,17 +52,30 @@ def _resize_max_side(img: np.ndarray, max_side: int) -> np.ndarray:
     return cv2.resize(img, (int(round(w * scale)), int(round(h * scale))), interpolation=interp)
 
 
+def _array_to_bgr(image: np.ndarray) -> np.ndarray:
+    """RGB / RGBA / gray array (uint8, or float in [0,1]) -> BGR uint8.
+    Arrays are RGB everywhere in vtl, matching Pillow, matplotlib and imageio."""
+    img = image
+    if img.dtype != np.uint8:
+        img = np.clip(np.rint(img * (255.0 if img.max() <= 1.0 else 1.0)), 0, 255).astype(np.uint8)
+    if img.ndim == 2:
+        return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    if img.shape[2] == 4:
+        return cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+    return cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+
 def load_bgr(image: ImageLike, max_side: int = 1536) -> Tuple[np.ndarray, Dict]:
-    """Kernel decode path: cv2.imdecode -> BGR uint8 -> resize to max_side."""
+    """Kernel decode path: cv2.imdecode -> BGR uint8 -> resize to max_side.
+    Arrays are taken as RGB (use vtl.kernel.measure_bgr for OpenCV BGR arrays)."""
     meta: Dict = {}
     if isinstance(image, np.ndarray):
-        img = image if image.ndim == 3 else cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-        if img.dtype != np.uint8:
-            img = np.clip(img * (255.0 if img.max() <= 1.0 else 1.0), 0, 255).astype(np.uint8)
+        img = _array_to_bgr(image)
         meta["path"] = ""
         meta["sha256"] = hashlib.sha256(np.ascontiguousarray(img).tobytes()).hexdigest()
     elif isinstance(image, Image.Image):
-        img = cv2.cvtColor(np.asarray(image.convert("RGB")), cv2.COLOR_RGB2BGR)
+        # EXIF-correct like the file path does (cv2.imdecode applies EXIF orientation)
+        img = cv2.cvtColor(np.asarray(ImageOps.exif_transpose(image).convert("RGB")), cv2.COLOR_RGB2BGR)
         meta["path"] = ""
         meta["sha256"] = hashlib.sha256(img.tobytes()).hexdigest()
     else:

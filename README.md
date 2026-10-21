@@ -69,6 +69,8 @@ These are **coordinates, not grades.** A centered composition is a valid choice,
 
 > The center isn't bad. Collapse is bad. Authorship is variance; priors are clustering.
 
+A centered reading can mean one body in the middle, or several masses balancing across it. Read placement with cohesion (μ), dispersion (SDI) and radial compliance. For relations between regions (counterweight, accents, load-bearing marks), see the [Image Structure Reader](https://www.parallaxmetrology.com/isr.html).
+
 More in [docs/interpretation.md](docs/interpretation.md). Limits and sharp edges, including what the mask can't see, are in [docs/known-issues.md](docs/known-issues.md).
 
 ## Check the claims

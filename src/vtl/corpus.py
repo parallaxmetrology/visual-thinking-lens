@@ -26,6 +26,15 @@ RIGID = 1.5
 FLEXIBLE = 2.5
 
 
+def _usable(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop rows the instrument itself marks unreadable (valid=0, or mask QA FAIL)."""
+    if "valid" in df.columns:
+        df = df[df["valid"] == 1]
+    if "mask_status" in df.columns:
+        df = df[df["mask_status"] != "FAIL"]
+    return df
+
+
 def _metrics(df: pd.DataFrame, metrics: Optional[Sequence[str]]) -> list:
     if metrics is not None:
         return list(metrics)
@@ -33,15 +42,14 @@ def _metrics(df: pd.DataFrame, metrics: Optional[Sequence[str]]) -> list:
 
 
 def fingerprint(df: pd.DataFrame, metrics: Optional[Sequence[str]] = None) -> pd.DataFrame:
-    """One row per metric describing the corpus distribution.
+    """One row per metric describing the corpus distribution (unreadable rows dropped).
 
     spread         CV = std/|mean|: wide > 0.30, tight < 0.15 (tight = locked default)
     wall_hardness  std/range: hard < 0.15 (rarely leaves a narrow band), soft > 0.30
     bimodal        platykurtic (kurtosis < 2) and roughly symmetric: maybe two modes
     p10..p90       the operating window; window_width = p90 - p10
     """
-    if "valid" in df.columns:
-        df = df[df["valid"] == 1]
+    df = _usable(df)
     rows = []
     for m in _metrics(df, metrics):
         v = pd.to_numeric(df[m], errors="coerce").dropna().to_numpy(dtype=float)
@@ -80,18 +88,22 @@ def midjourney_prompt(stem: str, separator: str = "--ar") -> str:
 
 def rigidity(df: pd.DataFrame, group: Union[str, Callable[[str], str]],
              metrics: Optional[Sequence[str]] = None, filename_col: str = "filename"):
-    """Creative rigidity: between-prompt std / within-prompt std, per metric.
+    """Creative rigidity: total std across all grouped images / mean within-group std.
 
     `group` is a column name, or a function mapping a filename stem to a group key
-    (e.g. midjourney_prompt). Needs >= 2 images per group.
+    (e.g. midjourney_prompt). Only groups with >= 2 images count.
 
-    ratio ~1   different prompts vary no more than re-rolls of one prompt: prior dominates
+    The numerator is the spread of *all* images in those groups (not of the group
+    means), as in the Fingerprint notebook. If prompts don't matter, everything
+    varies like re-rolls and the ratio is about 1; the more prompts move structure,
+    the higher it goes.
+
+    ratio ~1    different prompts vary no more than re-rolls of one prompt: prior dominates
     ratio > 2.5 prompts drive real structural differences
 
     Returns (per-metric DataFrame, overall median ratio).
     """
-    if "valid" in df.columns:
-        df = df[df["valid"] == 1]
+    df = _usable(df)
     if callable(group):
         stems = df[filename_col].astype(str).map(lambda f: re.sub(r"\.[^.]+$", "", f.split("/")[-1]))
         keys = stems.map(group)
@@ -105,7 +117,7 @@ def rigidity(df: pd.DataFrame, group: Union[str, Callable[[str], str]],
         w_std = float(np.sqrt(np.mean(within))) if within else 0.0
         c_std = float(np.sqrt(np.var(cross))) if len(cross) else 0.0
         ratio = c_std / w_std if w_std > 1e-8 else 0.0
-        rows.append({"metric": m, "within_std": w_std, "cross_std": c_std, "rigidity_ratio": ratio,
+        rows.append({"metric": m, "within_std": w_std, "total_std": c_std, "rigidity_ratio": ratio,
                      "reading": "flexible" if ratio > FLEXIBLE else "moderate" if ratio > RIGID else "rigid"})
     out = pd.DataFrame(rows).set_index("metric")
     valid = out["rigidity_ratio"][out["rigidity_ratio"] > 0]

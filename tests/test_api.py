@@ -78,3 +78,49 @@ def test_cli(tmp_path, capsys):
     assert "delta_x" in capsys.readouterr().out
     main(["overlay", str(IMAGES / "frog.jpg"), "-o", str(tmp_path / "o.png")])
     assert (tmp_path / "o.png").exists()
+
+
+def test_arrays_are_rgb_everywhere():
+    p = IMAGES / "portrait.jpg"
+    rgb = np.asarray(Image.open(p).convert("RGB"))
+    assert vtl.measure(rgb)["mu"] == vtl.measure(Image.open(p))["mu"]
+    rgba = np.dstack([rgb, np.full(rgb.shape[:2], 255, np.uint8)])
+    assert vtl.measure(rgba)["delta_x"] == vtl.measure(rgb)["delta_x"]
+
+
+def test_batch_has_no_absolute_paths_and_survives_bad_files(tmp_path):
+    sub = tmp_path / "set" / "a"
+    sub.mkdir(parents=True)
+    (sub / "frog.jpg").write_bytes((IMAGES / "frog.jpg").read_bytes())
+    (tmp_path / "set" / "frog.jpg").write_bytes((IMAGES / "frog.jpg").read_bytes())
+    (tmp_path / "set" / "broken.png").write_bytes(b"not an image")
+    hidden = tmp_path / "set" / ".ipynb_checkpoints"
+    hidden.mkdir()
+    (hidden / "x.jpg").write_bytes((IMAGES / "frog.jpg").read_bytes())
+    df = vtl.measure_many(tmp_path / "set")
+    assert sorted(df["relpath"]) == ["a/frog.jpg", "broken.png", "frog.jpg"]
+    assert "path" not in df.columns
+    assert str(tmp_path) not in df.to_csv()
+    bad = df[df.relpath == "broken.png"].iloc[0]
+    assert bad["valid"] == 0 and "broken.png" in bad["error"]
+    assert len(vtl.fingerprint(df)) == len(vtl.KERNEL_KEYS)  # bad row ignored
+
+
+def test_fingerprint_drops_qa_failures():
+    df = pd.DataFrame([{**{k: 0.1 * i for k in vtl.KERNEL_KEYS}, "valid": 1,
+                        "mask_status": "FAIL" if i == 0 else "PASS"} for i in range(5)])
+    assert vtl.fingerprint(df).loc["mu", "n"] == 4
+
+
+def test_radial_blank_image_label():
+    s = vtl.measure_radial(np.full((200, 300, 3), 128, np.uint8))
+    assert s["radial_label"].startswith("No mass detected")
+
+
+def test_diffusion_preserves_edges_and_does_not_wrap():
+    from vtl.kernel import perona_malik
+    g = np.zeros((64, 64), np.float32)
+    g[:, 32:] = 1.0
+    out = perona_malik(g)
+    assert out[10, 31] < 0.01 and out[10, 32] > 0.99   # edge kept
+    assert out[10, 0] < 0.01 and out[10, 63] > 0.99    # no wraparound

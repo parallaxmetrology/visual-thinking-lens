@@ -22,7 +22,7 @@ All instruments are deterministic: no randomness, no learned parameters, fixed c
 
 Diagnostics also returned: `mass_fraction`, `gradient_floor_85`, `gradient_ceiling_97` (report these with `r_v`: a drop in `r_v` can come from global edge activation rather than packing), `valid`, `quality_note`.
 
-**Optional preprocessing.** `diffusion=True` applies Perona–Malik anisotropic diffusion (10 iterations, κ = 30, γ = 0.1) before the gradient. Use it for JPEG-heavy, grainy, scanned or re-saved images. Leave it off for clean exports and any baseline that must match earlier CSVs.
+**Optional preprocessing.** `diffusion=True` applies Perona–Malik anisotropic diffusion (10 iterations, κ = 0.12 on [0,1] luminance, γ = 0.1, mirrored borders) before the gradient. It smooths noise inside regions and keeps edges. Use it for JPEG-heavy, grainy, scanned or re-saved images; leave it off for clean exports and any baseline that must match earlier CSVs. This deliberately differs from the Canon 3 notebook (see [known-issues](known-issues.md) #7).
 
 ### Mask QA (`vtl.mask_qa`)
 
@@ -61,6 +61,8 @@ Per metric across a set of images:
 - `wall_hardness` = std/range → `walls` (hard < 0.15, soft > 0.30)
 - `skew`, `kurtosis` (Pearson), `bimodal` = kurtosis < 2 and |skew| < 0.8
 
-`rigidity(df, group)`: between-group std / mean within-group std, per metric, plus the median overall. About 1 means re-rolls of one prompt vary as much as different prompts do. Above 2.5, prompts drive structure.
+`rigidity(df, group)`: std across all grouped images / mean within-group std, per metric, plus the median overall (as in the Fingerprint notebook). About 1 means re-rolls of one prompt vary as much as different prompts do. Above 2.5, prompts drive structure.
+
+`fingerprint`, `rigidity` and `compare` drop rows with `valid = 0` or `mask_status = FAIL` before computing.
 
 `compare(a, b)`: means, CVs, Cohen's d and the overlap of the two operating windows.
