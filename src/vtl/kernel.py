@@ -222,7 +222,8 @@ def spatial_dispersion(mask: np.ndarray) -> float:
     """sdi: mean distance of mass from its centroid, / image diagonal.
 
     Catches inward collapse that leaves delta_x, r_v and mu unchanged.
-    Roughly 0.1 tight blob, 0.25 balanced, 0.4 edge-weighted.
+    Possible range ~0.1 (tight blob) to ~0.45; real images mostly 0.19-0.29
+    (skills/vtl/references/reference-ranges.md).
     """
     ys, xs = np.nonzero(mask)
     if len(xs) == 0:

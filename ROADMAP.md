@@ -15,7 +15,7 @@ Rough order. Anything here is open for help. Comment on the matching issue first
 
 - **ComfyUI node:** measure every generation inline; plot the kernel across a batch.
 - **Hugging Face Space:** hosted demo for people who won't install anything.
-- **Agent skill / MCP server:** let Claude and other assistants call `vtl measure` and read results with the interpretation guide (a starter skill lives in `skills/`).
+- **MCP server:** let assistants call `vtl` directly. Agent skills for VTL, color, radial, Picture This and claim auditing already live in `skills/`.
 - **GitHub Action:** "composition regression" for model teams. Measure a fixed prompt set on each model version and flag drift in the fingerprint.
 - **Evaluation libraries:** propose VTL as a metric in existing text-to-image evaluation harnesses.
 

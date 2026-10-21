@@ -18,7 +18,7 @@ All instruments are deterministic: no randomness, no learned parameters, fixed c
 | `x_p` | Σ gradient in outer 15% band / Σ gradient | 0…1 |
 | `theta` | 1 − H/H_max of the magnitude-weighted 8-bin orientation histogram on the mask | 0…1 |
 | `d_s` | mean of 2 × distance-transform along the mask skeleton / min(h, w) | ~0…0.05 |
-| `sdi` | mean distance of mask pixels from their centroid / image diagonal | ~0.1…0.45 |
+| `sdi` | mean distance of mask pixels from their centroid / image diagonal | possible ~0.1…0.45; real images mostly 0.19–0.29 |
 
 Diagnostics also returned: `mass_fraction`, `gradient_floor_85`, `gradient_ceiling_97` (report these with `r_v`: a drop in `r_v` can come from global edge activation rather than packing), `valid`, `quality_note`.
 

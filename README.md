@@ -40,7 +40,7 @@ vtl compare engine_a.csv engine_b.csv         # two makers side by side
 vtl overlay image.jpg                         # the picture above, for your image
 ```
 
-Prefer notebooks? See [`notebooks/`](notebooks/). Each one runs locally or in Colab.
+Prefer notebooks? See [`notebooks/`](notebooks/). Each one runs locally or in Colab. Using an AI assistant? [`skills/`](skills/) has agent skills that run VTL and read its numbers carefully.
 
 ## What it measures
 

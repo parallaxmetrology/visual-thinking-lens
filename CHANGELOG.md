@@ -11,6 +11,8 @@ on the sample images (see `tests/test_golden.py`).
 - `vtl.fingerprint`, `vtl.rigidity`, `vtl.compare`: corpus readings from the Engine Fingerprint notebook
 - `vtl` command line, four example notebooks, browser demo
 
+Agent skills (`skills/`): `vtl`, `vtl-color`, `vtl-radial`, `vtl-picture-this`, `measurement-claim-auditor`, distilled from the 2025 skill library and recalibrated to empirical reference ranges (`tools/reference_ranges.py`).
+
 Deliberate differences from the notebooks:
 
 - `diffusion=True` (Perona–Malik) uses κ = 0.12 on [0,1] luminance and mirrored borders. The notebooks' κ = 30 made it a plain blur that also wrapped image edges. The default kernel (diffusion off) is unchanged.
