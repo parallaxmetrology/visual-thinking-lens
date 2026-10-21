@@ -1,11 +1,9 @@
 name: demo
-# Manual until the repository is public: Pages isn't available for private repos
-# on the free plan. At launch, restore the push trigger below.
 on:
+  push:
+    branches: [main]
+    paths: ["docs/**"]
   workflow_dispatch:
-  # push:
-  #   branches: [main]
-  #   paths: ["docs/**"]
 permissions:
   contents: read
   pages: write
