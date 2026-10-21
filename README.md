@@ -77,7 +77,7 @@ More in [docs/interpretation.md](docs/interpretation.md). Limits and sharp edges
 
 ## Faithful to the reference
 
-The package is a port of the research notebooks (Canon 3 v8, Color Kernel v0.4.8, RCA-2, Engine Fingerprint v0.3.7). [`tests/test_golden.py`](tests/test_golden.py) checks that it reproduces their outputs to 1e-7 on every sample image. Kernel constants are frozen: changing one means a new `kernel_version`, because comparability across runs is the whole point. See [docs/lineage.md](docs/lineage.md).
+The package is a port of the research notebooks (Canon 3 v8, Color Kernel v0.4.8, RCA-2, Engine Fingerprint v0.3.7). [`tests/test_golden.py`](tests/test_golden.py) checks that it reproduces their outputs to 1e-7 on every sample image (on the reference platform; across CPU architectures the kernel drifts by about 0.0003 in placement, see [known issues](docs/known-issues.md)). Kernel constants are frozen: changing one means a new `kernel_version`, because comparability across runs is the whole point. See [docs/lineage.md](docs/lineage.md).
 
 ## Contribute
 

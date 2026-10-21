@@ -30,6 +30,18 @@ The kernel always resizes the long side to 1536 px, *upscaling* smaller images w
 
 The kernel, color and radial instruments each use the mask and decode path of their own reference notebook (gradient band; OKLab percentile regions; edge + Otsu hybrid). Their centroids won't match exactly, and that's expected. Don't mix `delta_x` from the kernel with `dx` from RCA-2.
 
-## 6. Numerics depend on library versions
+## 6. "Same image, same numbers" holds per platform, not across CPUs
 
-Golden tests pin outputs to 1e-7 against the notebooks. The goldens were generated on macOS arm64. On x86-64 Linux (CI), the mass masks are **bit-identical** (same `mask_sha256`), but `d_s` differs by up to ~1e-3 relative (~2e-6 absolute; skeleton and distance transform), and the color centroids by ~1e-5 relative (float32 reductions). The tests allow exactly those tolerances. OpenCV, scikit-image and SciPy updates can shift values too. If the golden tests break after a dependency bump, report it.
+On one machine and one set of library versions, the kernel is fully deterministic: same image, same mask hash, same numbers. **Across CPU architectures it is not bit-identical.** OpenCV's resize and Sobel take different SIMD paths on Apple Silicon and on x86-64, and that flips about 0.5% of kernel mask pixels at the percentile thresholds. Measured on the sample images (`tools/golden_diff.py`, macOS arm64 vs Linux x86-64):
+
+| metric | max difference |
+|---|---|
+| Δx / Δy | 0.0002 / 0.0003 |
+| μ | 0.001 (large *relative* change on very fragmented masks) |
+| θ | 0.0015 |
+| ρᵣ | 0.07 |
+| xₚ, SDI, rᵥ | < 0.0001 |
+
+Radial compliance matched exactly; the color kernel agreed to about 1e-7.
+
+None of this changes how an image reads, but it does mean `mask_sha256` only matches on the same platform. The golden tests are strict (1e-7) on the reference platform (macOS arm64) and use these measured tolerances elsewhere. For a study, measure every image on the same machine and record `kernel_version` and library versions. OpenCV, scikit-image and SciPy updates can shift values too. If the drift report grows after a dependency bump, report it.
