@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- New agent skill `composition-critique`: feedback on one picture against what it is meant to do. A script (`skills/composition-critique/scripts/critique.py`) measures the kernel, color and radial readings, places kernel values in the reference set, writes plain-language facts, an overlay, a three-band value map and measured crop candidates, and compares an edited version with the original (`--compare`). No package code changed.
+
 ## 0.1.0 — 2026-10-21
 
 First release as a package. Ported from the research notebooks; outputs match them

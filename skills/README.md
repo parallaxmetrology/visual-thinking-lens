@@ -4,6 +4,7 @@ Skills that teach an AI assistant (Claude Code, Claude, or any agent that reads 
 
 | skill | what it does |
 |---|---|
+| [`composition-critique`](composition-critique/) | feedback on one picture against what it's meant to do: measured facts, then crops and value moves whose effect is measured (crops before you suggest them, edits with `--compare`) |
 | [`vtl`](vtl/) | measure images, gate on QA, read one image or a whole set; priors and center collapse at the right strength |
 | [`vtl-color`](vtl-color/) | value and color structure: light/dark placement, chroma, hue breadth, palette |
 | [`vtl-radial`](vtl-radial/) | RCA-2: is the composition organized around the frame center or around its own mass? |
@@ -17,7 +18,7 @@ All of them read values against real ranges ([`vtl/references/reference-ranges.m
 Claude Code: copy a skill folder into `~/.claude/skills/` (all projects) or `.claude/skills/` (one project).
 
 ```bash
-cp -r skills/vtl skills/measurement-claim-auditor ~/.claude/skills/
+cp -r skills/composition-critique skills/vtl skills/vtl-picture-this skills/measurement-claim-auditor ~/.claude/skills/
 ```
 
 The skills call the `vtl` command, so install the package too:
