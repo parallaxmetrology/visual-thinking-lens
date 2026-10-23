@@ -201,7 +201,7 @@ def value_map(path, out_path, side_px=512):
 def compare(a_path, b_path):
     ka, kb = vtl.measure(a_path), vtl.measure(b_path)
     ca, cb = vtl.measure_color(a_path), vtl.measure_color(b_path)
-    keys_k = ["delta_x", "delta_y", "r_v", "mu", "x_p", "sdi"]
+    keys_k = ["delta_x", "delta_y", "r_v", "mu", "x_p", "sdi", "theta"]
     keys_c = ["okl_L_mean", "lightness_contrast_p95_p05", "light_delta_x", "light_delta_y", "dark_delta_y",
               "spotlight_concentration", "chroma_focality"]
     return {"before": str(a_path), "after": str(b_path),

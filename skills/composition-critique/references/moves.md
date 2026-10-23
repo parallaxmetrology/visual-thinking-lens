@@ -42,6 +42,27 @@ Report the measured numbers, not the label. If a crop didn't do what its name sa
 | Concentrate saturated color on the subject, neutralize elsewhere | `chroma_focality` rises; chroma centroid moves toward the subject |
 | Narrow the palette | `effective_palette_count` and `hue_entropy` fall |
 
+## Recomposition (when the person can reshoot or regenerate)
+
+Crops only rearrange what is already in the frame. When the picture is AI-generated, or the scene can be shot again, bigger moves are on the table. Describe the move in words the person can act on (a shot change or a prompt change), name the signature you expect, and measure the new version with `--compare`.
+
+The signatures below come from 10 before/after pairs made by this project's author, measured with `scripts/move_signatures.py` (full report: `move-signatures-example.md`). Counts describe those pairs, mostly one or a few per move; treat them as expectations to check, not rules.
+
+| move | pairs | signature observed |
+|---|---|---|
+| Shrink the subject, move it off-center, give it open space | 4 | farther from center 4/4; edge energy up 4/4; light gathered into fewer places 4/4 (median +0.38); color more focused 3/4; spread down 3/4; contrast down 3/4 |
+| Add a foreground anchor (rocks, ground, a near object) | 1 | mass drops (Δy 0.03 → 0.10); edge energy jumps (x_p 0.33 → 0.53); one block becomes many pieces (μ 0.15 → 0.05); lights pushed above darks |
+| Change viewpoint to add a leading curve (a shoreline, a path) | 1 | like a foreground anchor, plus color gathers (chroma focality 0.22 → 0.54) |
+| Move closer to the subject (portrait) | 1 | less quiet field; mass rises toward the face; contrast up; color gathers on the face (focality 0.46 → 0.98) |
+| Add atmosphere behind the subject (fog, haze, bright sky) | 1 | lights go high and gather (light-over-dark +0.11 → +0.51); the subject stops dominating the field statistics (μ 0.25 → 0.003, background becomes texture) |
+| Simplify and blur the background, light from one side | 1 | one dominant body (μ 0.14 → 0.38); light gathers on the lit side; darks settle low |
+| Restage (new light, pose, setting) | 1 | busier frame (r_v 0.74 → 0.57); contrast nearly doubled; lights above darks; color less focused |
+| Add a diagonal (a leaning post, crossing stems, a receding stair) | 3 | **not reliably measured**: θ fell in two and rose in one. θ reads how strongly one direction dominates, not tilt. Judge diagonals by eye |
+
+Across all 10 pairs, lights moved further above darks in 7 (side-lit off-center moves were the exceptions). Recomposing changes many things at once, so a measured change can't be pinned on one ingredient. Report the overall signature and whether it moved toward the stated intent.
+
+To calibrate on your own work, list before/after pairs with a move label in a CSV and run `python scripts/move_signatures.py pairs.csv`.
+
 ## What none of these measure
 
 - **Where a viewer actually looks.** No gaze or attention is measured. Say "light and contrast gather at X", not "the eye goes to X".
