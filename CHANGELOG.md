@@ -3,6 +3,7 @@
 ## Unreleased
 
 - New agent skill `composition-critique`: feedback on one picture against what it is meant to do. A script (`skills/composition-critique/scripts/critique.py`) measures the kernel, color and radial readings, places kernel values in the reference set, writes plain-language facts, an overlay, a three-band value map and measured crop candidates, and compares an edited version with the original (`--compare`). No package code changed.
+- New agent skill `deformation-operators`: prompts for image generators that deform a body or form on purpose (coil, stretch, twist, arc, wave, depth pull, framing) so it reads as the limb itself. Nine operators with safe defaults, capsules, acceptance checks and fixes, plus GPT/Gemini and Midjourney/SDXL recipes. Adapted from the Deformation Operator Playbook; example images at https://parallaxmetrology.com/deformation_operator_playbook. No measurement involved.
 
 ## 0.1.0 — 2026-10-21
 
