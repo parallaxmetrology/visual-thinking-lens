@@ -1,11 +1,12 @@
 # Agent skills
 
-Skills that teach an AI assistant (Claude Code, Claude, or any agent that reads `SKILL.md` folders) to run VTL and read its numbers carefully, plus one that steers image generators.
+Skills that teach an AI assistant (Claude Code, Claude, or any agent that reads `SKILL.md` folders) to run VTL and read its numbers carefully, plus two that steer image generators.
 
 | skill | what it does |
 |---|---|
 | [`composition-critique`](composition-critique/) | feedback on one picture against what it's meant to do: measured facts, then crops and value moves whose effect is measured (crops before you suggest them, edits with `--compare`) |
 | [`deformation-operators`](deformation-operators/) | prompts that make an image generator deform a body on purpose (coil, stretch, twist, arc, wave) without ropes, extra limbs or snapping back; GPT, Gemini, Midjourney and SDXL recipes. No measurement; [example images](https://parallaxmetrology.com/deformation_operator_playbook) |
+| [`foreshortening-recipes`](foreshortening-recipes/) | prompts for strong foreshortening and depth (a foot or hand at the camera, a head-on bike, a receding corridor): numbered near-to-far stages, anchors and bans, 30+ recipes and a checklist for reading results. No measurement; [example images](https://parallaxmetrology.com/foreshortening_recipe_book) |
 | [`vtl`](vtl/) | measure images, gate on QA, read one image or a whole set; priors and center collapse at the right strength |
 | [`vtl-color`](vtl-color/) | value and color structure: light/dark placement, chroma, hue breadth, palette |
 | [`vtl-radial`](vtl-radial/) | RCA-2: is the composition organized around the frame center or around its own mass? |
@@ -22,7 +23,7 @@ Claude Code: copy a skill folder into `~/.claude/skills/` (all projects) or `.cl
 cp -r skills/composition-critique skills/vtl skills/vtl-picture-this skills/measurement-claim-auditor ~/.claude/skills/
 ```
 
-The measuring skills call the `vtl` command, so install the package too (`deformation-operators` needs nothing):
+The measuring skills call the `vtl` command, so install the package too (`deformation-operators` and `foreshortening-recipes` need nothing):
 
 ```bash
 pip install git+https://github.com/parallaxmetrology/visual-thinking-lens
