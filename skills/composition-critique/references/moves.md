@@ -46,7 +46,7 @@ Report the measured numbers, not the label. If a crop didn't do what its name sa
 
 Crops only rearrange what is already in the frame. When the picture is AI-generated, or the scene can be shot again, bigger moves are on the table. Describe the move in words the person can act on (a shot change or a prompt change), name the signature you expect, and measure the new version with `--compare`.
 
-The signatures below come from 10 before/after pairs made by this project's author, measured with `scripts/move_signatures.py` (full report: `move-signatures-example.md`). Counts describe those pairs, mostly one or a few per move; treat them as expectations to check, not rules.
+The signatures below come from 16 before/after pairs made by this project's author, measured with `scripts/move_signatures.py` (full report: `move-signatures-example.md`). Counts describe those pairs, mostly one or a few per move; treat them as expectations to check, not rules.
 
 | move | pairs | signature observed |
 |---|---|---|
@@ -57,9 +57,14 @@ The signatures below come from 10 before/after pairs made by this project's auth
 | Add atmosphere behind the subject (fog, haze, bright sky) | 1 | lights go high and gather (light-over-dark +0.11 → +0.51); the subject stops dominating the field statistics (μ 0.25 → 0.003, background becomes texture) |
 | Simplify and blur the background, light from one side | 1 | one dominant body (μ 0.14 → 0.38); light gathers on the lit side; darks settle low |
 | Restage (new light, pose, setting) | 1 | busier frame (r_v 0.74 → 0.57); contrast nearly doubled; lights above darks; color less focused |
+| Change the gesture (a body in action instead of standing) | 2 | busier field 2/2 (r_v about −0.10); mass more gathered 2/2; lighter with more contrast 2/2; lights above darks 2/2; color more focused 2/2; θ unchanged in both, so the instrument doesn't see gesture as direction |
+| Split the frame into light and dark (a dark doorway against a warm sky) | 1 | color gathers sharply (chroma focality 0.45 → 0.96); edge energy down |
+| Simplify the light (one soft gradient instead of a busy light pattern) | 1 | color spreads (focality 0.79 → 0.29); lights move above darks |
+| Pull one element away as a separated accent (a lone balloon) | 1 | one dominant body splits in two (μ 0.61 → 0.10); mass rises; edge energy down; color gathers |
+| Shift the mood (muted color, storm sky, weathering) | 1 | one dominant body again (μ 0.10 → 0.43); mass sinks; edge energy up; lights back above darks |
 | Add a diagonal (a leaning post, crossing stems, a receding stair) | 3 | **not reliably measured**: θ fell in two and rose in one. θ reads how strongly one direction dominates, not tilt. Judge diagonals by eye |
 
-Across all 10 pairs, lights moved further above darks in 7 (side-lit off-center moves were the exceptions). Recomposing changes many things at once, so a measured change can't be pinned on one ingredient. Report the overall signature and whether it moved toward the stated intent.
+Across all 16 pairs, lights moved further above darks in 11 and edge energy rose in 11; those two are the most common side effects of recomposing in this set, so check them whatever the move. Recomposing changes many things at once, so a measured change can't be pinned on one ingredient. Report the overall signature and whether it moved toward the stated intent.
 
 To calibrate on your own work, list before/after pairs with a move label in a CSV and run `python scripts/move_signatures.py pairs.csv`.
 

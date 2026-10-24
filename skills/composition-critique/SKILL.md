@@ -41,7 +41,7 @@ Pick two to four moves that serve the stated intent, using `references/moves.md`
 
 Look at `crops.png` before recommending any crop. The candidates are placed from measured mass alone, which knows nothing about meaning: in a mountain-lake picture the mass can sit on the shoreline, and an "aimed at a thirds point" crop will happily cut off the peaks. Reject any crop that loses the subject or something the intent depends on, and say why if it looked attractive in the numbers.
 
-If the person can reshoot or regenerate (AI images especially), don't stop at crops: offer one or two recomposition moves (shrink and move the subject off-center with open space, a foreground anchor, a viewpoint with a leading curve, moving closer, atmosphere behind the subject, a simpler background) from the recomposition section of `references/moves.md`, written as a shot or prompt change, with the signature you expect.
+If the person can reshoot or regenerate (AI images especially), don't stop at crops: offer one or two recomposition moves (shrink and move the subject off-center with open space, a foreground anchor, a viewpoint with a leading curve, moving closer, a change of gesture, atmosphere behind the subject, a light-dark split, a separated accent, a simpler background or light, a change of mood) from the recomposition section of `references/moves.md`, written as a shot or prompt change, with the signature you expect.
 
 For value, weight, color and recomposition moves, the person has to make the change. Say what you expect to move, and offer to check it: `python scripts/critique.py ORIGINAL --compare EDITED` reports before, after and change for each reading.
 
